@@ -129,7 +129,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.ablativo"
+        applicationId "com.ablativo_mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
