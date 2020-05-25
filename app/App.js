@@ -5,9 +5,11 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { AppNavigator } from './navigation/appNavigation';
 import { AuthNavigator } from './navigation/authNavigation';
 import { SplashScreen } from './screens/splashScreen';
+import Toast from 'react-native-rn-toast';
+import AsyncStorage from '@react-native-community/async-storage';
+
 import { default as theme } from './styles/custom-theme'; // <-- Import app theme
 import { default as mapping } from './styles/mapping.json'; // <-- Import app mapping
-
 export const AuthContext = React.createContext();
 
 export default function App({ navigation }) {
@@ -72,18 +74,37 @@ export default function App({ navigation }) {
         // In a production app, we need to send some data (usually username, password) to server and get a token
         // We will also need to handle errors if sign in failed
         // After getting token, we need to persist the token using `AsyncStorage`
-        console.log(data);
+        //console.log("Login: " + JSON.stringify(data));
+        if (data.username != "" && data.password != "") {
+          const token = "temp_token_test";
+          dispatch({ type: 'SIGN_IN', token: token });
+          try {
+            await AsyncStorage.setItem('userToken', token)
 
-        dispatch({ type: 'SIGN_IN', token: '' });
+          } catch (error) {
+              console.log("Error storing token " + error)
+          }
+        }
+        else Toast.show('Invalid Data', Toast.SHORT);
       },
       signOut: () => dispatch({ type: 'SIGN_OUT' }),
       signUp: async data => {
         // In a production app, we need to send user data to server and get a token
         // We will also need to handle errors if sign up failed
         // After getting token, we need to persist the token using `AsyncStorage`
-        
-        console.log(data);
-        dispatch({ type: 'SIGN_IN', token: '' });
+        console.log("Register: " + data.username);
+        if (data.username != "" && data.password != "") {
+          try {
+            await AsyncStorage.setItem('userToken', token)
+
+          } catch (error) {
+              console.log("Error storing token " + error)
+          }
+
+          const token = "temp_token_test";
+          dispatch({ type: 'SIGN_IN', token: token });
+        }
+        else Toast.show('Invalid Data', Toast.SHORT);
       },
     }),
     []

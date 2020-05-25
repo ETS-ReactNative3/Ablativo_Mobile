@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';;
 
 import { HomeScreen } from '../screens/AppFlow/home';
 import { ProfileScreen } from '../screens/AppFlow/profile';
-import { ChatScreen } from '../screens/AppFlow/chat';
+import ChatScreen  from '../screens/AppFlow/chat';
 /* import { Login } from './screens/login';
 import { SignIn } from './screens/signin'; */
 
@@ -27,7 +27,7 @@ const BottomTabBar = ({ navigation, state }) => (
     <BottomNavigation
         selectedIndex={state.index}
         onSelect={index => navigation.navigate(state.routeNames[index])}>
-        <BottomNavigationTab title='CHAT' icon={ChatIcon}/>
+        <BottomNavigationTab title='CHAT' icon={ChatIcon} options={{tabBarVisible: false}}/>
         <BottomNavigationTab title='HOME' icon={HomeIcon}/>
         <BottomNavigationTab title='PROFILE' icon={PersonIcon} />
     </BottomNavigation>
@@ -35,7 +35,7 @@ const BottomTabBar = ({ navigation, state }) => (
 
 const TabNavigator = () => (
     <Navigator tabBar={props => <BottomTabBar {...props} />}>
-        <Screen name='Chat' component={ChatScreen} />
+        <Screen name='Chat' component={ChatScreen} tabBarOption={{tabBarVisible: false}}/>
         <Screen name='Home' component={HomeScreen} />
         <Screen name='Profile' component={ProfileScreen} />
     </Navigator>

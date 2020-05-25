@@ -54,6 +54,8 @@ target 'Ablativo_Mobile' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
+  pod 'react-native-dialogflow', :path => '../node_modules/react-native-dialogflow'
+
   target 'Ablativo_MobileTests' do
     inherit! :complete
     # Pods for testing
