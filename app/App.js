@@ -7,7 +7,7 @@ import { AuthNavigator } from './navigation/authNavigation';
 import { SplashScreen } from './screens/splashScreen';
 import Toast from 'react-native-rn-toast';
 import AsyncStorage from '@react-native-community/async-storage';
-
+import { login, register } from './repository/authRepository';
 import { default as theme } from './styles/custom-theme'; // <-- Import app theme
 import { default as mapping } from './styles/mapping.json'; // <-- Import app mapping
 export const AuthContext = React.createContext();
@@ -26,13 +26,11 @@ export default function App({ navigation }) {
         case 'SIGN_IN':
           return {
             ...prevState,
-            isSignout: false,
             userToken: action.token,
           };
         case 'SIGN_OUT':
           return {
             ...prevState,
-            isSignout: true,
             userToken: null,
           };
       }
@@ -75,15 +73,9 @@ export default function App({ navigation }) {
         // We will also need to handle errors if sign in failed
         // After getting token, we need to persist the token using `AsyncStorage`
         //console.log("Login: " + JSON.stringify(data));
-        if (data.username != "" && data.password != "") {
-          const token = "temp_token_test";
-          dispatch({ type: 'SIGN_IN', token: token });
-          try {
-            await AsyncStorage.setItem('userToken', token)
 
-          } catch (error) {
-              console.log("Error storing token " + error)
-          }
+        if (data.username != "" && data.password != "") {
+          login(data.username, data.password, dispatch);
         }
         else Toast.show('Invalid Data', Toast.SHORT);
       },
@@ -94,15 +86,7 @@ export default function App({ navigation }) {
         // After getting token, we need to persist the token using `AsyncStorage`
         console.log("Register: " + data.username);
         if (data.username != "" && data.password != "") {
-          try {
-            await AsyncStorage.setItem('userToken', token)
-
-          } catch (error) {
-              console.log("Error storing token " + error)
-          }
-
-          const token = "temp_token_test";
-          dispatch({ type: 'SIGN_IN', token: token });
+          register(data.username, data.password, dispatch);
         }
         else Toast.show('Invalid Data', Toast.SHORT);
       },
@@ -121,11 +105,12 @@ export default function App({ navigation }) {
         theme={{ ...eva.light, ...theme }}
         customMapping={mapping}
       >
-        {state.isLoading
-          ? <SplashScreen />   // App is Loading then splash screen
-          : state.userToken == null
-            ? <AuthNavigator /> // !Token User is not signed in
-            : <AppNavigator /> // Token then user is signed in
+        {
+          state.isLoading
+            ? <SplashScreen />   // App is Loading then splash screen
+            : state.userToken == null
+              ? <AuthNavigator /> // !Token User is not signed in
+              : <AppNavigator /> // Token then user is signed in
         }
       </ApplicationProvider>
     </AuthContext.Provider>
