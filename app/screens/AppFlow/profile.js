@@ -44,10 +44,10 @@ export const ProfileScreen = ({ navigation }) => {
         borderRadius: 75,
         marginBottom: 20,
       }}>
-        <Text category='h2' style={{
+        <Text category='h5' style={{
           justifyContent: 'center',
           alignSelf: 'center',
-        }}>{name}</Text>
+        }}>{name.toUpperCase()}</Text>
         <Image
           source={require('../../assets/images/sticker2.png')}
           style={{

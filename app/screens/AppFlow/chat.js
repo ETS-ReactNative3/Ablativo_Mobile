@@ -14,6 +14,11 @@ import Kontakt, { KontaktModule } from 'react-native-kontaktio';
 const { connect, init, startDiscovery, startScanning } = Kontakt;
 const kontaktEmitter = new NativeEventEmitter(KontaktModule);
 
+const user = {
+  _id: 1,
+  name: 'Developer',
+}
+
 const requestLocationPermission = async () => {
   try {
     const granted = await PermissionsAndroid.request(
@@ -57,71 +62,90 @@ const InfoIcon = (props) => (
 const LogoutIcon = (props) => (
   <Icon {...props} name='log-out' />
 );
+
+const renderBackAction = () => (
+  <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
+);
+
+export const beaconSetup = async () => {
+  if (isAndroid) {
+    // Android
+    const granted = await requestLocationPermission();
+    if (granted) {
+      await connect();
+      await startScanning();
+    } else {
+      Alert.alert(
+        'Permission error',
+        'Location permission not granted. Cannot scan for beacons',
+        [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+        { cancelable: false },
+      );
+    }
+  } else {
+    // iOS
+    await init();
+    await startDiscovery();
+  }
+
+  // Add beacon listener
+  if (isAndroid) {
+    console.log("Listening for beacon")
+
+    DeviceEventEmitter.addListener('beaconsDidUpdate', ({ beacons, region }) => {
+      console.log('beaconsDidUpdate', beacons, region);
+    });
+  } else {
+    kontaktEmitter.addListener('didDiscoverDevices', ({ beacons }) => {
+      console.log('didDiscoverDevices', beacons);
+    });
+  }
+};
 export default function ChatScreen({ navigation }) {
-  const [menuVisible, setMenuVisible] = React.useState(false);
+  const [contatore, setContatore] = useState(1);
+  const [menuVisible, setMenuVisible] = useState(false);
   const [state, setState] = useState({
     messages: [
       {
+        _id: 2,
+        text: `Hey, qual è il tuo colore preferito?`,
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'Statue',
+          avatar: 'https://ladiscaricadelloziotom.files.wordpress.com/2017/09/img_0263.jpg?w=614'
+        },
+        quickReplies: {
+          type: 'radio', // or 'checkbox'
+          values: [{
+            title: "Red",
+            value: "Red"
+          }, {
+            title: "Yellow",
+            value: "Yellow"
+          },
+          {
+            title: "Blue",
+            value: "Blue"
+          }]
+        },
+      },
+      {
         _id: 1,
-        text: `Bella fratellì\n\nOggi te nsegno a guidà fratelli`,
+        text: `Benvenuto nel museo dell'Arte Classica\nFai un giro, le statue prenderanno vita!`,
         createdAt: new Date(),
         user: {
           _id: 2,
           name: 'FAQ Bot',
-          avatar: 'https://i.imgur.com/7k12EPD.png'
-        }
+          avatar: 'https://www.italiaincammino.it/wp-content/uploads/2018/02/minerva-sapienza-1024x768.jpg'
+        },
       },
-      {
-        _id: 2,
-        text: `Bella fratellì\n\nOggi te nsegno a guidà fratelli`,
-        createdAt: new Date(),
-        user: {
-          _id: 3,
-          name: 'Fratelli',
-          avatar: 'https://picsum.photos/id/1/1920'
-        }
-      },
+     
     ]
   });
 
-  const beaconSetup = async () => {
-    if (isAndroid) {
-      // Android
-      console.log("Ye i'm called")
-
-      const granted = await requestLocationPermission();
-      if (granted) {
-        await connect();
-        await startScanning();
-      } else {
-        Alert.alert(
-          'Permission error',
-          'Location permission not granted. Cannot scan for beacons',
-          [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
-          { cancelable: false },
-        );
-      }
-    } else {
-      // iOS
-      await init();
-      await startDiscovery();
-    }
-
-    // Add beacon listener
-    if (isAndroid) {
-      console.log("Listening")
-
-      DeviceEventEmitter.addListener('beaconsDidUpdate', ({ beacons, region }) => {
-        console.log('beaconsDidUpdate', beacons, region);
-      });
-    } else {
-      kontaktEmitter.addListener('didDiscoverDevices', ({ beacons }) => {
-        console.log('didDiscoverDevices', beacons);
-      });
-    }
-  };
   React.useEffect(() => {
-    beaconSetup();
+    //beaconSetup();
   });
 
   const toggleMenu = () => {
@@ -143,16 +167,89 @@ export default function ChatScreen({ navigation }) {
     </React.Fragment>
   );
 
-  const renderBackAction = () => (
-    <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
-  );
+
 
   function onSend(messages = []) {
     setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, messages)
     }));
+    console.log(messages[0].user._id);
+
+    if (messages[0].user._id == 1) {
+      console.log(messages[0].user._id);
+      botSend(messages[0].text);
+      
+    }
+
   }
 
+  const botSend = (name) => {
+    console.log(name);
+    if (name == "Red" || name == "Yellow" || name == "Blue") {
+      onSend([{
+        _id: 1,
+        text: 'Bene! il tuo colore preferito è ' + name + '!\n\nIndovina qual è il mio',
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'FAQ Bot',
+          avatar: 'https://ladiscaricadelloziotom.files.wordpress.com/2017/09/img_0263.jpg?w=614'
+        },
+        quickReplies: {
+          type: 'radio', // or 'checkbox'
+          values: [{
+            title: "Gold",
+            value: "Gold"
+          }, {
+            title: "Green",
+            value: "Green"
+          },
+          {
+            title: "Silver",
+            value: "Silver"
+          }]
+        },
+      },])
+    }
+    else if (name == "Silver" || name == "Green" || name == "Gold") {
+      onSend([{
+        _id: 1,
+        text: 'Ottimo, era proprio ' + name + '! ',
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'FAQ Bot',
+          avatar: 'https://ladiscaricadelloziotom.files.wordpress.com/2017/09/img_0263.jpg?w=614'
+        },
+      },])
+    }
+  }
+  
+  const onQuickReply = replies => {
+    const createdAt = new Date()
+    if (replies.length === 1) {
+      console.log(replies);
+      onSend([
+        {
+          createdAt,
+          _id: Math.round(Math.random() * 1000000),
+          text: replies[0].title,
+          user,
+        },
+      ])
+    } else if (replies.length > 1) {
+      onSend([
+        {
+          createdAt,
+          _id: Math.round(Math.random() * 1000000),
+          text: replies.map(reply => reply.title).join(', '),
+          user,
+        },
+      ])
+    } else {
+      console.warn('replies param is not set correctly')
+    }
+  }
 
   const navigateBack = () => {
     navigation.goBack();
@@ -164,7 +261,7 @@ export default function ChatScreen({ navigation }) {
       <Layout style={{ minHeight: 40, }} level='1'>
         <TopNavigation
           alignment='center'
-          title='Chat Name'
+          title='Room 1'
           subtitle='Mentor'
 /*           accessoryLeft={renderBackAction}
  */          accessoryRight={renderRightActions}
@@ -177,6 +274,7 @@ export default function ChatScreen({ navigation }) {
           _id: 1
         }}
         showAvatarForEveryMessage={true}
+        onQuickReply={onQuickReply}
       />
     </SafeAreaView>
   );
