@@ -41,6 +41,7 @@ export default MessageItem = (props) => {
   );
 
   return (
+    message.message = message.message.length > 35 ? message.message.substring(0,35 )+'...' :message.message,
     <ListItem
       {...listItemProps}
       title={message.username}

@@ -16,6 +16,7 @@ import MessageItem from "../../components/messageItem";
 
 const initialMessages = [
   {
+    id: 1,
     username: "Costantino",
     message: "Lo sai che nella chiesa ortodossa ono considerato santo?",
     avatar: "https://picsum.photos/300",
@@ -23,6 +24,7 @@ const initialMessages = [
     isRead: false,
   },
   {
+    id: 2,
     username: "Grande Capo",
     message: "Questo è fun art attack",
     avatar: "https://picsum.photos/200",
@@ -40,15 +42,19 @@ const LogoutIcon = (props) => <Icon {...props} name="log-out" />;
 export const ChatList = ({ navigation }) => {
   const styles = useStyleSheet(themedStyles);
   const [menuVisible, setMenuVisible] = useState(false);
-  const onItemPress = (index) => {
-    navigation.navigate("Chat");
+  const onItemPress = (item) => {
+    
+    navigation.navigate("Chat", {
+      chatId: item.id,
+      username: item.username,
+    });
   };
 
   const renderItem = (message) => (
     <MessageItem
       style={styles.item}
       message={message.item}
-      onPress={onItemPress}
+      onPress={() => onItemPress(message.item)}
     />
   );
 
@@ -82,7 +88,7 @@ export const ChatList = ({ navigation }) => {
           accessoryRight={renderRightActions}
         />
       </Layout>
-      <Divider/>
+      <Divider />
       <List
         style={styles.list}
         data={initialMessages}
