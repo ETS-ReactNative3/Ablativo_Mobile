@@ -63,9 +63,6 @@ const LogoutIcon = (props) => (
   <Icon {...props} name='log-out' />
 );
 
-const renderBackAction = () => (
-  <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
-);
 
 export const beaconSetup = async () => {
   if (isAndroid) {
@@ -101,8 +98,7 @@ export const beaconSetup = async () => {
     });
   }
 };
-export default function ChatScreen({ navigation }) {
-  const [contatore, setContatore] = useState(1);
+export const  ChatScreen = ({ navigation }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [state, setState] = useState({
     messages: [
@@ -255,6 +251,9 @@ export default function ChatScreen({ navigation }) {
     navigation.goBack();
   };
 
+  const renderBackAction = () => (
+    <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -263,8 +262,8 @@ export default function ChatScreen({ navigation }) {
           alignment='center'
           title='Room 1'
           subtitle='Mentor'
-/*           accessoryLeft={renderBackAction}
- */          accessoryRight={renderRightActions}
+          accessoryLeft={renderBackAction}
+        accessoryRight={renderRightActions}
         />
       </Layout>
       <GiftedChat
