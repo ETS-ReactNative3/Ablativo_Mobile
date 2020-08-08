@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   TouchableWithoutFeedback,
@@ -8,6 +8,7 @@ import {
   Dimensions,
   ImageBackground,
   TouchableOpacity,
+  Easing,
 } from "react-native";
 
 import {
@@ -19,14 +20,14 @@ import {
   Button,
 } from "@ui-kitten/components";
 import { AuthContext } from "../../App";
+import Carousel, { Pagination } from "react-native-snap-carousel";
 
-const AlertIcon = (props) => <Icon {...props} name="alert-circle-outline" />;
+const MENTOR_AUGUSTO = "https://picsum.photos/1000";
+const MENTOR_CESARE = "https://picsum.photos/1500";
+const MENTOR_NERONE = "https://picsum.photos/100";
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const MENTOR_NERONE = "https://picsum.photos/200";
-const MENTOR_AUGUSTO = "https://picsum.photos/200";
-const MENTOR_CESARE = "https://picsum.photos/200";
+const screenWidth = Math.round(Dimensions.get("screen").width);
+const screenHeight = Math.round(Dimensions.get("screen").height);
 
 export const UserTypeItem = (props) => {
   const { image, label, labelColor, selected, ...attributes } = props;
@@ -55,14 +56,38 @@ export const UserTypeItem = (props) => {
   );
 };
 
-export const LoginScreen = ({ navigation }) => {
+export const SigninScreen = ({ navigation }) => {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const { signIn } = React.useContext(AuthContext);
   const { signUp } = React.useContext(AuthContext);
-  const [value, setValue] = React.useState("");
+
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
   const [selectedType, setSelectedType] = React.useState("");
+
+  const [data, setData] = useState([
+    {
+      name: "Augusto",
+      quote: "“Acta est fabula”",
+      image: MENTOR_AUGUSTO,
+      desc:
+        "Augusto volle trasmettere l'immagine di sé come principe pacifico e quella di Roma come trionfatrice universale attraverso un uso accorto delle immagini, l'abbellimento della città di Roma, la tutela degli intellettuali che celebravano il principato, la riqualificazione del senato e dell'ordine degli equites.",
+    },
+    {
+      name: "Cesare",
+      quote: "“Veni vidi vici”",
+      image: MENTOR_CESARE,
+      desc:
+        "Cesare fin da giovanissimo si fece notare subito non solo per la sua abilità militare, ma anche per la sua notevole abilità oratoria e per la capacità di conquistarsi il favore della gente con una grande disponibilità e un'ostenta generosità. ",
+    },
+    {
+      name: "Nerone",
+      quote: "“Qualis artifex pereo”",
+      image: MENTOR_NERONE,
+      desc:
+        "Nerone fu un personaggio pieno di contraddizioni: un pazzo ha incendiato la città, racconta la leggenda, ma anche un uomo amante dell'arte e della bellezza. Un despota megalomane e crudele ma, allo stesso tempo, amato dal popolo per la riforma tributaria e monetaria che diedero vantaggi ai più poveri.",
+    },
+  ]);
 
   const toggleSecureEntry = () => {
     setSecureTextEntry(!secureTextEntry);
@@ -78,112 +103,162 @@ export const LoginScreen = ({ navigation }) => {
     navigation.goBack();
   };
 
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Layout style={{ flex: 1, alignItems: "center" }}>
-        <Image
-          source={require("../../assets/images/logo.png")}
-          style={{
-            width: "80%",
-            resizeMode: "contain",
-          }}
-        />
-        <View style={styles.userTypesContainer}>
-          <UserTypeItem
-            label="Cesare"
-            labelColor="#ECC841"
-            image={MENTOR_CESARE}
-            onPress={() => setSelectedType("Cesare")}
-            selected={selectedType === "Cesare"}
-          />
-          <UserTypeItem
-            label="Augusto"
-            labelColor="#2CA75E"
-            image={MENTOR_AUGUSTO}
-            onPress={() => setSelectedType("Augusto")}
-            selected={selectedType === "Augusto"}
-          />
-          <UserTypeItem
-            label="Nerone"
-            labelColor="#36717F"
-            image={MENTOR_NERONE}
-            onPress={() => setSelectedType("Nerone")}
-            selected={selectedType === "Nerone"}
-          />
+  const _renderItem = ({ item, index }) => {
+    return (
+      <View style={styles.slide}>
+        <View style={{ flex: 0.75 }}>
+          <Text style={styles.mentorName}>{item.name}</Text>
+          <Text style={styles.mentorQuote}>{item.quote}</Text>
+          <View style={styles.imageWrapper}>
+            <TouchableOpacity
+              onPress={() => {
+                _carousel.snapToPrev();
+              }}
+            >
+              <Icon
+                width={40}
+                height={40}
+                margin={10}
+                fill="#4a4a4c"
+                name="arrow-left-outline"
+                style={{
+                  alignSelf: "center",
+                  alignContent: "center",
+                  alignItems: "center",
+                }}
+              />
+            </TouchableOpacity>
+            <Image
+              source={{ uri: item.image }}
+              style={{
+                width: 200,
+                height: 200,
+                alignSelf: "center",
+                resizeMode: "contain",
+                borderRadius: 1000,
+              }}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                _carousel.snapToNext();
+              }}
+            >
+              <Icon
+                width={40}
+                height={40}
+                margin={10}
+                fill="#4a4a4c"
+                name="arrow-right-outline"
+                style={{
+                  alignSelf: "center",
+                  alignContent: "center",
+                  alignItems: "center",
+                }}
+              />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.mentorDescription}>{item.desc}</Text>
         </View>
-        <Layout
-          style={{
-            flex: 0.7,
-            alignItems: "center",
-            width: "60%",
-            marginTop: 10,
-          }}
-        >
-          <Input
-            placeholder="Username"
-            value={username}
-            onChangeText={(nextValue) => setUsername(nextValue)}
-          />
-          <Input
-            value={password}
-            placeholder="Password"
-            caption="Should contain at least 8 symbols"
-            accessoryRight={renderIcon}
-            captionIcon={AlertIcon}
-            secureTextEntry={secureTextEntry}
-            onChangeText={(nextValue) => setPassword(nextValue)}
-            style={{ marginTop: 10 }}
-          />
-          <Button
-            onPress={() => signIn({ username, password })}
-            status="primary"
-            style={{ marginTop: 10, width: "100%" }}
-          >
-            Login
-          </Button>
-          <Button
-            onPress={() => signUp({ username, password })}
-            status="primary"
-            style={{ marginTop: 5, width: "100%" }}
-          >
-            Register
-          </Button>
-        </Layout>
-      </Layout>
+        <TouchableOpacity onPress={() => signIn({ username, password })}>
+          <View style={styles.nextButton}>
+            <Text style={[styles.selectButtonText]}>Seleziona</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
+      <Text style={styles.usernamePlaceHolder}>Scegli un mentore</Text>
+      <Carousel
+        ref={(c) => {
+          _carousel = c;
+        }}
+        data={data}
+        renderItem={_renderItem}
+        sliderWidth={screenWidth}
+        itemWidth={screenWidth}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  userTypesContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: SCREEN_WIDTH,
+  mainContent: {
+    height: screenHeight,
     alignItems: "center",
+    backgroundColor: "#FFF",
   },
-  userTypeItemContainer: {
+  circle: {
+    elevation: 10,
+    width: 800,
+    height: 800,
+    borderRadius: 800 / 2,
+    borderColor: "#50a0d5",
+    borderWidth: 0,
+    backgroundColor: "#FFF",
+    position: "absolute",
+    left: -266,
+    top: -40,
+  },
+  usernamePlaceHolder: {
+    marginTop: 20,
+    justifyContent: "center",
+    alignSelf: "center",
+    fontSize: 20,
+    fontWeight: "300",
+    color: "#4a4a4c",
+  },
+  mentorName: {
+    marginTop: -50,
+    justifyContent: "center",
+    alignSelf: "center",
+    fontSize: 50,
+    fontWeight: "bold",
+    color: "#4a4a4c",
+  },
+  mentorQuote: {
+    justifyContent: "center",
+    alignSelf: "center",
+    fontSize: 20,
+    marginBottom: 20,
+    fontWeight: "300",
+    color: "#4a4a4c",
+  },
+  slide: {
+    alignItems: "center",
+    marginTop: 40,
+    height: screenHeight,
+  },
+  mentorDescription: {
+    margin: 40,
+    textAlign: "justify",
+    fontSize: 18,
+  },
+  nextButton: {
+    width: 350,
+    height: 50,
+    borderRadius: 20 / 2,
+    margin: 40,
+    alignSelf: "flex-end",
+    alignContent: "flex-end",
     alignItems: "center",
     justifyContent: "center",
-    opacity: 0.5,
+    backgroundColor: "#50a0d5",
+    borderColor: "#50a0d5",
+    borderWidth: 0,
   },
-  userTypeItemContainerSelected: {
-    opacity: 1,
+  selectButtonText: {
+    justifyContent: "center",
+    alignSelf: "center",
+    fontWeight: "bold",
+    fontSize: 20,
+    color: "#FFFF",
   },
-  userTypeMugshot: {
-    margin: 4,
-    height: 70,
-    width: 70,
-    borderRadius: 40,
-  },
-  userTypeMugshotSelected: {
-    height: 100,
-    width: 100,
-    borderRadius: 50,
-
-  },
-  userTypeLabel: {
-    color: "yellow",
-    fontFamily: "UbuntuBold",
-    fontSize: 11,
+  imageWrapper: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
