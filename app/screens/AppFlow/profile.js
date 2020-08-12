@@ -44,15 +44,16 @@ export const ProfileScreen = ({ navigation }) => {
           width: 150,
           height: 150,
           borderRadius: 200,
-          marginTop: "20%",
+          marginTop: "32%",
+          marginBottom: "-10%",
           backgroundColor: "#FFFF",
           overflow: 'hidden'
         }}>
           <Image
-            source={require('../../assets/images/sticker2.png')}
+            source={require('../../assets/images/Augusto.png')}
             style={{
               width: 150,
-              height: 160,
+              height: 150,
               borderRadius: 75,
               alignSelf: 'center',
             }} />

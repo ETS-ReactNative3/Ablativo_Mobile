@@ -29,37 +29,11 @@ const MENTOR_NERONE = "https://picsum.photos/100";
 const screenWidth = Math.round(Dimensions.get("screen").width);
 const screenHeight = Math.round(Dimensions.get("screen").height);
 
-export const UserTypeItem = (props) => {
-  const { image, label, labelColor, selected, ...attributes } = props;
-  return (
-    <TouchableOpacity {...attributes}>
-      <View
-        style={[
-          styles.userTypeItemContainer,
-          selected && styles.userTypeItemContainerSelected,
-        ]}
-      >
-        <Text style={[styles.userTypeLabel, { color: labelColor }]}>
-          {label}
-        </Text>
-        <Image
-          source={{
-            uri: image,
-          }}
-          style={[
-            styles.userTypeMugshot,
-            selected && styles.userTypeMugshotSelected,
-          ]}
-        />
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-export const SigninScreen = ({ navigation }) => {
-  const [username, setUsername] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const { signIn } = React.useContext(AuthContext);
+export const SignUpScreen = (props) => {
+  
+  const {navigation, route} = props;
+  const [username, setUsername] = React.useState(route.params.username);
+  const [password, setPassword] = React.useState(route.params.password);
   const { signUp } = React.useContext(AuthContext);
 
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
@@ -159,7 +133,13 @@ export const SigninScreen = ({ navigation }) => {
           </View>
           <Text style={styles.mentorDescription}>{item.desc}</Text>
         </View>
-        <TouchableOpacity onPress={() => signIn({ username, password })}>
+
+        <TouchableOpacity
+          onPress={() => {
+            var mentor = item.name.toUpperCase();
+            signUp({ username, password, mentor });
+          }}
+        >
           <View style={styles.nextButton}>
             <Text style={[styles.selectButtonText]}>Seleziona</Text>
           </View>

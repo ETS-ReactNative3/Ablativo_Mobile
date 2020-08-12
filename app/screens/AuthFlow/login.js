@@ -10,7 +10,8 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from "react-native";
-
+import Toast from "react-native-rn-toast";
+import { checkUsername } from "../../repository/authRepository";
 import { Divider, Icon, Layout, Input, Button } from "@ui-kitten/components";
 import { AuthContext } from "../../App";
 
@@ -22,9 +23,9 @@ const AlertIcon = (props) => <Icon {...props} name="alert-circle-outline" />;
 export const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [check, setCheck] = React.useState(false);
+
   const { signIn } = React.useContext(AuthContext);
-  const { signUp } = React.useContext(AuthContext);
-  const [value, setValue] = React.useState("");
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
   const [selectedType, setSelectedType] = React.useState("");
 
@@ -42,6 +43,11 @@ export const LoginScreen = ({ navigation }) => {
     navigation.goBack();
   };
 
+  const renderStatus = (type) => {
+    if (check) {
+      if (type == "") return "danger";
+    } else return "";
+  };
   return (
     <SafeAreaView>
       <Layout style={styles.mainContent}>
@@ -64,6 +70,7 @@ export const LoginScreen = ({ navigation }) => {
           <Input
             placeholder="SickedOyster47"
             value={username}
+            status={renderStatus(username)}
             onChangeText={(nextValue) => setUsername(nextValue)}
             style={{
               width: screenWidth * 0.6,
@@ -74,8 +81,9 @@ export const LoginScreen = ({ navigation }) => {
           />
           <Text style={styles.usernamePlaceHolder}>Password</Text>
           <Input
-            value={password}
             placeholder="*******"
+            value={password}
+            status={renderStatus(password)}
             caption="Should contain at least 8 symbols"
             accessoryRight={renderIcon}
             captionIcon={AlertIcon}
@@ -89,7 +97,12 @@ export const LoginScreen = ({ navigation }) => {
             }}
           />
           <View style={styles.loginButton}>
-            <TouchableOpacity onPress={() => signIn({ username, password })}>
+            <TouchableOpacity
+              onPress={() => {
+                setCheck(true);
+                signIn({ username, password });
+              }}
+            >
               <Icon
                 width={40}
                 height={40}
@@ -104,8 +117,27 @@ export const LoginScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.signInButton}>
-            <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
+          <View style={styles.signUpButton}>
+            <TouchableOpacity
+              onPress={() => {
+                setCheck(true);
+                if (username == "" || password == "") {
+                  Toast.show(
+                    "Inserisci tutti i campi per procedere!",
+                    Toast.SHORT
+                  );
+                }
+                else if(username.length < 6 || password.length < 8 ) {
+                  Toast.show(
+                    "Password o Username non validi",
+                    Toast.SHORT
+                  );
+                }
+                else
+                  checkUsername(username, password, navigation.navigate);
+            
+              }}
+            >
               <Icon
                 width={40}
                 height={40}
@@ -126,7 +158,6 @@ export const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-
   mainContent: {
     height: screenHeight,
     alignItems: "center",
@@ -145,7 +176,7 @@ const styles = StyleSheet.create({
     top: -30,
   },
   loginButton: {
-    elevation: 10,
+    elevation: 5,
     marginLeft: 255,
     marginTop: 20,
     width: 70,
@@ -158,10 +189,10 @@ const styles = StyleSheet.create({
     borderColor: "#50a0d5",
     borderWidth: 0,
   },
-  signInButton: {
-    elevation: 10,
+  signUpButton: {
+    elevation: 5,
     marginLeft: 190,
-    marginTop: -15 ,
+    marginTop: -15,
     width: 70,
     height: 70,
     borderRadius: 70 / 2,

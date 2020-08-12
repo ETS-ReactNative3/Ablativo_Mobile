@@ -4,14 +4,14 @@ import { createStackNavigator } from '@react-navigation/stack'
 
 
 import { LoginScreen } from '../screens/AuthFlow/login';
-import { SigninScreen } from '../screens/AuthFlow/signin';
+import { SignUpScreen } from '../screens/AuthFlow/signup';
 
 const { Navigator, Screen } = createStackNavigator();
 
 const AuthNavigation = () => (
   <Navigator headerMode='none'>
     <Screen name='Login' component={LoginScreen}/>
-    <Screen name='SignIn' component={SigninScreen}/>
+    <Screen name='SignUp' component={SignUpScreen}/>
   </Navigator>
 );
 

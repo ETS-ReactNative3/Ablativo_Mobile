@@ -65,5 +65,7 @@ const styles = StyleSheet.create({
   dateText: {
     textAlign: "right",
     minWidth: 64,
+    fontSize: 11,
+    color: "gray"
   },
 });

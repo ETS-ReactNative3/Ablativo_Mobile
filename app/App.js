@@ -86,7 +86,7 @@ export default function App({ navigation }) {
         // After getting token, we need to persist the token using `AsyncStorage`
         console.log("Register: " + data.username);
         if (data.username != "" && data.password != "") {
-          register(data.username, data.password, dispatch);
+          register(data.username, data.password, data.mentor, dispatch);
         }
         else Toast.show('Invalid Data', Toast.SHORT);
       },

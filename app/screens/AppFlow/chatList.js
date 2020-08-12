@@ -43,7 +43,6 @@ export const ChatList = ({ navigation }) => {
   const styles = useStyleSheet(themedStyles);
   const [menuVisible, setMenuVisible] = useState(false);
   const onItemPress = (item) => {
-    
     navigation.navigate("Chat", {
       chatId: item.id,
       username: item.username,
@@ -85,7 +84,7 @@ export const ChatList = ({ navigation }) => {
           alignment="center"
           title="Museo dei Gessi"
           subtitle="Sapienza"
-          accessoryRight={renderRightActions}
+          //accessoryRight={renderRightActions}
         />
       </Layout>
       <Divider />
