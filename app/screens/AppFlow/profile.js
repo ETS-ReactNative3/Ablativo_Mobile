@@ -7,13 +7,15 @@ import {
   FlatList,
   Text,
   ImageBackground,
+  Animated,
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
 import { Icon } from "@ui-kitten/components";
-import { ScrollView } from "react-native-gesture-handler";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { Dimensions } from "react-native";
 import { colors } from "react-native-elements";
-
+import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
+import { CONST } from "../../../config";
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
 
@@ -31,38 +33,54 @@ const visits = [
         id: 0,
         question: "Come sei arrivato in questo museo?",
         answer: "Ho navigato nei mari di tutto il mondo prima di giungere qui.",
-        statue: "Zeus",
+        statue: { name: "Zeus", image: "https://picsum.photos/710" },
       },
       {
         id: 1,
         question: "Quanti anni hai?",
-        answer: "Sono nato nel 192 d.C. sotto la mano di Petrus artista Romano",
-        statue: "Minerva",
+        answer: "Sono nata nel 192 d.C. sotto la mano di Petrus artista Romano",
+        statue: { name: "Minerva", image: "https://picsum.photos/750" },
       },
     ],
   },
-  /* {
-    id: 1,
-    museum: "Museo del Louvre",
-    location: "Parigi",
-    time: "2h 35m",
-    musicLink: "www.google.it",
-    createdAt: Date.now(),
-    image: "../../assets/images/uniroma1-universita-la-sapienza-di-roma.jpg",
-    questions: [
-      {
-        id: 0,
-        question: "Quanti anni hai?",
-        answer: "Sono nato nel 192 d.C. sotto la mano di Petrus artista Romano",
-        statue: "Minerva",
-      },
-    ],
-  }, */
+ 
 ];
 
-export const ProfileScreen = ({ navigation }) => {
+export const ProfileScreen = ({ props }) => {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [name, setName] = React.useState("");
+  const [showQuestionAndAnswer, setShowQuestionAndAnswer] = useState(false);
+  const [animationValue, setAnimationValue] = useState(new Animated.Value(90));
+  const [viewState, setViewState] = useState(true);
+
+  const animatedStyle = {
+    height: animationValue,
+  };
+
+  const msgRef = React.createRef();
+  const musicRef = React.createRef();
+
+  const toggleAnimation = () => {
+    if (viewState) {
+      setShowQuestionAndAnswer(true);
+      Animated.timing(animationValue, {
+        toValue: 300,
+        timing: 1400,
+        useNativeDriver: false,
+      }).start(() => {
+        setViewState(false);
+      });
+    } else {
+      setShowQuestionAndAnswer(false);
+      Animated.timing(animationValue, {
+        toValue: 100,
+        timing: 1400,
+        useNativeDriver: false,
+      }).start(() => {
+        setViewState(true);
+      });
+    }
+  };
 
   async function retrieveData() {
     try {
@@ -79,44 +97,152 @@ export const ProfileScreen = ({ navigation }) => {
     retrieveData();
   });
 
-  const _renderVisitItem = (data) => {
+  const _renderQuestions = (data) => {
+    console.log(data);
     return (
-      <View style={{ margin: 15 }}>
-        <View style={styles.cardContainer}>
-          <View style={styles.imageWrapper}>
+      <View style={{ margin: 10 }}>
+        <View style={styles.questionLeftItem}>
+          <View
+            style={{
+              margin: 5,
+              justifyContent: "center",
+            }}
+          >
             <Image
               style={{
-                flex: 0.9,
-                resizeMode: "center",
+                width: 30,
+                height: 30,
+                borderRadius: 30 / 2,
+                resizeMode: "cover",
                 borderRadius: 15,
                 marginLeft: 10,
               }}
-              source={require("../../assets/images/uniroma1-universita-la-sapienza-di-roma.jpg")}
-            ></Image>
+              source={CONST.MENTOR_AUGUSTO}
+            />
           </View>
-          <View style={styles.cardCentralContent}>
-            <View style={styles.cardTitleWrapper}>
-              <Text>
-                <Text style={styles.cardTitleText}>
-                  {data.item.museum + " "}
+
+          <Text
+            style={{
+              flex: 0.9,
+              justifyContent: "center",
+              alignItems: "center",
+              alignContent: "center",
+              alignSelf: "center",
+            }}
+          >
+            <Text style={styles.questionStatueName}>Tu: </Text>
+            <Text style={styles.questionText}>{data.item.question}</Text>
+          </Text>
+        </View>
+        <View style={styles.questionLeftItem}>
+          <View
+            style={{
+              margin: 5,
+              justifyContent: "center",
+            }}
+          >
+            <Image
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 30 / 2,
+                resizeMode: "cover",
+                borderRadius: 15,
+                marginLeft: 10,
+              }}
+              source={{ uri: data.item.statue.image }}
+            />
+          </View>
+
+          <Text style={{ flex: 0.9 }}>
+            <Text style={styles.questionStatueName}>
+              {data.item.statue.name + ": "}
+            </Text>
+            <Text style={styles.questionText}>{data.item.answer}</Text>
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const _renderVisitItem = (data) => {
+    return (
+      <View style={{ margin: 15 }}>
+        <Animated.View style={[styles.cardContainer, animatedStyle]}>
+          <View style={{ height: 90, flexDirection: "row" }}>
+            <View style={styles.cardLeftContent}>
+              <Image
+                style={{
+                  width: 80,
+                  height: 80,
+                  resizeMode: "center",
+                  borderRadius: 15,
+                  marginLeft: 10,
+                }}
+                source={require("../../assets/images/uniroma1-universita-la-sapienza-di-roma.jpg")}
+              />
+            </View>
+            <View style={styles.cardCentralContent}>
+              <View style={styles.cardTitleWrapper}>
+                <Text>
+                  <Text style={styles.cardTitleText}>
+                    {data.item.museum + " "}
+                  </Text>
                 </Text>
+              </View>
+              <Text style={styles.cardDateText}>mer 12 ott</Text>
+
+              <Text style={styles.cardTimeText}>
+                Durata visita: {data.item.time}
               </Text>
             </View>
-            <Text style={styles.cardDateText}>mer 12 ott</Text>
+            <View style={styles.cardRightContent}>
+              <TouchableWithoutFeedback
+                onPress={() => musicRef.current.startAnimation()}
+              >
+                <Icon
+                  width={30}
+                  height={30}
+                  fill={["color-primary-default"]}
+                  name="music-outline"
+                  animation="pulse"
+                  ref={musicRef}
+                />
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  toggleAnimation();
+                  msgRef.current.startAnimation();
+                }}
+              >
+                <Icon
+                  width={30}
+                  height={30}
+                  fill={["color-primary-default"]}
+                  name="message-square-outline"
+                  animation="pulse"
+                  ref={msgRef}
+                />
+              </TouchableWithoutFeedback>
 
-            <Text style={styles.cardTimeText}>
-              Durata visita: {data.item.time}
-            </Text>
-          </View>
-          <View style={styles.cardRightContent}>
-            <View style={{ flex: 0.5, backgroundColor: "blue" }}>
-              <Icon name="arrow-ios-downward-outline" />
-            </View>
-            <View style={{ flex: 0.5, backgroundColor: "green" }}>
+              {/*   <View style={{ flex: 0.5, backgroundColor: "green" }}>
               <Icon name="music-outline" />;
+            </View> */}
             </View>
           </View>
-        </View>
+          {showQuestionAndAnswer ? (
+            <FlatList
+              data={data.item.questions}
+              renderItem={_renderQuestions}
+              keyExtractor={(item) => item.id.toString()}
+              initialNumToRender={3}
+              scrollEnabled
+              ItemSeparatorComponent={() => (
+                <View style={styles.horizontalRow}></View>
+              )}
+            ></FlatList>
+          ) : null}
+        </Animated.View>
       </View>
     );
   };
@@ -131,10 +257,7 @@ export const ProfileScreen = ({ navigation }) => {
           borderColor: "#75151e",
         }}
       >
-        <Image
-          source={require("../../assets/images/Augusto.png")}
-          style={styles.mentorImage}
-        />
+        <Image source={CONST.MENTOR_AUGUSTO} style={styles.mentorImage} />
         <View style={styles.profileInfo}>
           <Text style={styles.usernameText}>{name.toUpperCase()}</Text>
           <View style={styles.socialsContainer}>
@@ -187,20 +310,17 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     flex: 1,
-    backgroundColor: "white",
     elevation: 10,
     borderRadius: 10,
-    height: 100,
-    flexDirection: "row",
+
+    backgroundColor: "white",
   },
-  imageWrapper: {
-    flex: 0.25,
-    borderRadius: 10,
+  iconCentered: {
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center",
-    padding: 5,
   },
+
   mentorImage: {
     width: 100,
     height: 100,
@@ -248,10 +368,44 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     alignItems: "center",
   },
-  cardCentralContent: { flex: 1, margin: 10, justifyContent: "center" },
+  cardLeftContent: {
+    flex: 0.25,
+    borderRadius: 10,
+    alignContent: "center",
+    alignItems: "center",
+    padding: 5,
+  },
+  cardCentralContent: {
+    flex: 1,
+    margin: 10,
+  },
   cardRightContent: {
-    flex: 0.4,
-    backgroundColor: "red",
-    flexDirection: "column",
+    height: 80,
+    width: 30,
+    marginHorizontal: 10,
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+  },
+  questionLeftItem: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  questionStatueName: {
+    color: "black",
+    fontSize: 16,
+    fontWeight: "bold",
+    alignItems: "center",
+  },
+  questionText: {
+    color: "black",
+    fontSize: 15,
+    alignItems: "center",
+  },
+  questionCenterItem: {},
+  horizontalRow: {
+    borderBottomWidth: 0.5,
+    width: "80%",
+    marginLeft: "10%",
   },
 });
