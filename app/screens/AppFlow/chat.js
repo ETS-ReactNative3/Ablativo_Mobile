@@ -22,6 +22,8 @@ import {
 } from "@ui-kitten/components";
 import { GiftedChat } from "react-native-gifted-chat";
 import Kontakt, { KontaktModule } from "react-native-kontaktio";
+import { ChatHeader } from "../../components/chatHeader";
+import { CONST } from "../../../config";
 
 const { connect, init, startDiscovery, startScanning } = Kontakt;
 const kontaktEmitter = new NativeEventEmitter(KontaktModule);
@@ -104,11 +106,15 @@ export const beaconSetup = async () => {
 };
 
 export const ChatScreen = ({ route, navigation }) => {
-  console.log(navigation);
-  const { chatId } = route.params;
-  const { username } = route.params;
-  console.log(chatId +":"+username);
-  
+  console.log(route);
+  const chat = route.params.chat;
+  const chatId = chat.chatId;
+  const username = route.params.otherName;
+  const otherPic = otherPic;
+  const mentor = "augusto";
+
+  console.log(chatId + ":" + username);
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [state, setState] = useState({
     messages: [
@@ -278,16 +284,14 @@ export const ChatScreen = ({ route, navigation }) => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Layout style={{ minHeight: 40 }} level="1">
-        <TopNavigation
-          alignment="center"
-          title={username}
-          subtitle="Mentor"
-          accessoryLeft={renderBackAction}
-          accessoryRight={renderRightActions}
-        />
-      </Layout>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ChatHeader
+        type={CONST.HEADER_TYPE.CHAT}
+        name={username}
+        subtitle={mentor}
+        goBack={navigateBack}
+      />
+
       <GiftedChat
         messages={state.messages}
         onSend={(messages) => onSend(messages)}
@@ -296,6 +300,8 @@ export const ChatScreen = ({ route, navigation }) => {
         }}
         showAvatarForEveryMessage={true}
         onQuickReply={onQuickReply}
+        alignTop={true}
+        renderInputToolbar={() => null}
       />
     </SafeAreaView>
   );

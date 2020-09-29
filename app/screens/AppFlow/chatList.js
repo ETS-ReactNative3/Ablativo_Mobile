@@ -1,18 +1,15 @@
 import React, { useState } from "react";
-import { ListRenderItemInfo, View } from "react-native";
 import {
-  Divider,
-  Layout,
-  List,
-  StyleService,
-  useStyleSheet,
-  TopNavigation,
-  TopNavigationAction,
-  OverflowMenu,
-  MenuItem,
-  Icon,
-} from "@ui-kitten/components";
-import MessageItem from "../../components/messageItem";
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+} from "react-native";
+import { Icon } from "@ui-kitten/components";
+import { ChatHeader } from "../../components/chatHeader";
+import { CONST, dateFormatter } from "../../../config";
 
 const initialMessages = [
   {
@@ -25,90 +22,119 @@ const initialMessages = [
   },
   {
     id: 2,
-    username: "Grande Capo",
-    message: "Questo è fun art attack",
+    username: "GrandeCapo",
+    message: "Questo è un art attack",
     avatar: "https://picsum.photos/200",
     date: new Date(),
     isRead: false,
   },
 ];
 
-const MenuIcon = (props) => <Icon {...props} name="more-vertical" />;
-
-const InfoIcon = (props) => <Icon {...props} name="info" />;
-
-const LogoutIcon = (props) => <Icon {...props} name="log-out" />;
-
 export const ChatList = ({ navigation }) => {
-  const styles = useStyleSheet(themedStyles);
-  const [menuVisible, setMenuVisible] = useState(false);
-  const onItemPress = (item) => {
-    navigation.navigate("Chat", {
-      chatId: item.id,
-      username: item.username,
-    });
+  
+  const _renderChatList = (element) => {
+    const item = element.item;
+    const messagePreview = item.message;
+
+    return (
+      <View>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("Chat", {
+              chat: item,
+              ownName: "ownName",
+              ownPic: "ownPic",
+              otherName: item.username,
+              otherPic: item.avatar,
+            })
+          }
+          style={styles.chatItemContainer}
+        >
+          <Image source={{ uri: item.avatar }} style={styles.imageContainer} />
+          <View style={styles.chatElementContainer}>
+            <Text
+              style={styles.textName}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {item.username}
+            </Text>
+            <Text
+              style={styles.textLastMessage}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {messagePreview}
+            </Text>
+            <Text
+              style={styles.textTime}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {dateFormatter(item.date)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
   };
-
-  const renderItem = (message) => (
-    <MessageItem
-      style={styles.item}
-      message={message.item}
-      onPress={() => onItemPress(message.item)}
-    />
-  );
-
-  const toggleMenu = () => {
-    setMenuVisible(!menuVisible);
-  };
-  const renderMenuAction = () => (
-    <TopNavigationAction icon={MenuIcon} onPress={toggleMenu} />
-  );
-
-  const renderRightActions = () => (
-    <React.Fragment>
-      <OverflowMenu
-        anchor={renderMenuAction}
-        visible={menuVisible}
-        onBackdropPress={toggleMenu}
-      >
-        <MenuItem accessoryLeft={InfoIcon} title="About" />
-        <MenuItem accessoryLeft={LogoutIcon} title="Delete and leave group" />
-      </OverflowMenu>
-    </React.Fragment>
-  );
 
   return (
-    <React.Fragment>
-      <Layout style={{ minHeight: 40 }} level="1">
-        <TopNavigation
-          alignment="center"
-          title="Museo dei Gessi"
-          subtitle="Sapienza"
-          //accessoryRight={renderRightActions}
-        />
-      </Layout>
-      <Divider />
-      <List
-        style={styles.list}
-        data={initialMessages}
-        renderItem={renderItem}
+    <View style={styles.container}>
+      <ChatHeader
+        type={CONST.HEADER_TYPE.CHATLIST}
+        name={"Museo dei gessi"}
+        subtitle={"Sapienza"}
+
       />
-    </React.Fragment>
+      <FlatList
+        data={initialMessages}
+        renderItem={_renderChatList}
+        keyExtractor={(item) => item.id + "_" + item.index}
+        ItemSeparatorComponent={() => (
+          <View style={styles.horizontalRow}></View>
+        )}
+        vertical
+      ></FlatList>
+    </View>
   );
 };
 
-const themedStyles = StyleService.create({
-  list: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
+    backgroundColor: "white",
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+  chatItemContainer: {
+    flexDirection: "row",
   },
-  item: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "background-basic-color-3",
+  textName: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  textLastMessage: {
+    fontSize: 14,
+  },
+  textTime: {
+    fontSize: 12,
+  },
+  imageContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
+    margin: 10,
+    borderWidth: 0.4,
+    borderColor: "black",
+  },
+  chatElementContainer: {
+    flex: 0.9,
+    alignContent: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+  },
+  horizontalRow: {
+    borderBottomWidth: 0.5,
+    width: "95%",
+    marginLeft: "2.5%",
   },
 });

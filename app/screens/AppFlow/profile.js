@@ -41,9 +41,14 @@ const visits = [
         answer: "Sono nata nel 192 d.C. sotto la mano di Petrus artista Romano",
         statue: { name: "Minerva", image: "https://picsum.photos/750" },
       },
+      {
+        id: 2,
+        question: "Di che materiale sei fatto?",
+        answer: "Sono fatto completamente di bronzo, ma per gli Dei non brillo più come un tempo.",
+        statue: { name: "Plutarco", image: "https://picsum.photos/720" },
+      },
     ],
   },
- 
 ];
 
 export const ProfileScreen = ({ props }) => {
@@ -231,16 +236,17 @@ export const ProfileScreen = ({ props }) => {
             </View>
           </View>
           {showQuestionAndAnswer ? (
-            <FlatList
-              data={data.item.questions}
-              renderItem={_renderQuestions}
-              keyExtractor={(item) => item.id.toString()}
-              initialNumToRender={3}
-              scrollEnabled
-              ItemSeparatorComponent={() => (
-                <View style={styles.horizontalRow}></View>
-              )}
-            ></FlatList>
+            <ScrollView>
+              <FlatList
+                data={data.item.questions}
+                renderItem={_renderQuestions}
+                keyExtractor={(item) => item.id.toString()}
+                vertical={true}
+                ItemSeparatorComponent={() => (
+                  <View style={styles.horizontalRow}></View>
+                )}
+              ></FlatList>
+            </ScrollView>
           ) : null}
         </Animated.View>
       </View>
