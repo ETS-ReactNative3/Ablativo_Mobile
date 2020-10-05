@@ -1,14 +1,6 @@
-import AsyncStorage from "@react-native-community/async-storage";
 import Toast from "react-native-rn-toast";
 import { address } from "../../config";
-
-const saveData = async (key, data) => {
-  try {
-    await AsyncStorage.setItem(key, data);
-  } catch (error) {
-    console.log("Error storing token " + error);
-  }
-};
+import { retrieveData, saveData } from "./utility";
 
 export async function login(username, pwd, dispatch) {
   console.log("Username : " + username + " Pwd : " + pwd);
