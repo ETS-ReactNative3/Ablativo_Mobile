@@ -15,11 +15,13 @@ import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { Dimensions } from "react-native";
 import { colors } from "react-native-elements";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
+import { getMyInfo, getMyVisits } from "../../repository/appRepository";
 import { CONST } from "../../../config";
+
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
 
-const visits = [
+/* const visits = [
   {
     id: 0,
     museum: "Museo dei gessi",
@@ -44,20 +46,22 @@ const visits = [
       {
         id: 2,
         question: "Di che materiale sei fatto?",
-        answer: "Sono fatto completamente di bronzo, ma per gli Dei non brillo più come un tempo.",
+        answer:
+          "Sono fatto completamente di bronzo, ma per gli Dei non brillo più come un tempo.",
         statue: { name: "Plutarco", image: "https://picsum.photos/720" },
       },
     ],
   },
 ];
-
+ */
 export const ProfileScreen = ({ props }) => {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [name, setName] = React.useState("");
   const [showQuestionAndAnswer, setShowQuestionAndAnswer] = useState(false);
   const [animationValue, setAnimationValue] = useState(new Animated.Value(90));
   const [viewState, setViewState] = useState(true);
-
+  const [counter, setCounter] = useState({});
+  const [visits, setVisits] = useState([]);
   const animatedStyle = {
     height: animationValue,
   };
@@ -87,20 +91,32 @@ export const ProfileScreen = ({ props }) => {
     }
   };
 
-  async function retrieveData() {
+  async function retrieveData(data) {
     try {
-      var userName = await AsyncStorage.getItem("userName");
-      if (userName) setName(userName);
-      else console.log("Username unavailable");
+      var profile = data[0];
+
+      setCounter(profile.counter);
+      setName(profile.username);
     } catch (e) {
       // Restoring token failed
-      console.log("Cannot retrieve username " + e);
+      console.log("Cannot retrieve profile Info " + e);
+    }
+  }
+
+  function handleVisits(data) {
+    try {
+      var visits = data;
+      if (visits != []) setVisits(visits);
+    } catch (e) {
+      // Restoring token failed
+      console.log("Cannot retrieve visits Info " + e);
     }
   }
 
   React.useEffect(() => {
-    retrieveData();
-  });
+    getMyInfo(retrieveData);
+    getMyVisits(handleVisits);
+  }, []);
 
   const _renderQuestions = (data) => {
     console.log(data);
@@ -198,7 +214,7 @@ export const ProfileScreen = ({ props }) => {
               <Text style={styles.cardDateText}>mer 12 ott</Text>
 
               <Text style={styles.cardTimeText}>
-                Durata visita: {data.item.time}
+                Durata visita: {data.item.time}m
               </Text>
             </View>
             <View style={styles.cardRightContent}>
@@ -240,7 +256,7 @@ export const ProfileScreen = ({ props }) => {
               <FlatList
                 data={data.item.questions}
                 renderItem={_renderQuestions}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item._id}
                 vertical={true}
                 ItemSeparatorComponent={() => (
                   <View style={styles.horizontalRow}></View>
@@ -269,15 +285,15 @@ export const ProfileScreen = ({ props }) => {
           <View style={styles.socialsContainer}>
             <View style={styles.profileSocial}>
               <Text category="s2">Questions</Text>
-              <Text category="c2">20</Text>
+              <Text category="c2">{counter.question}</Text>
             </View>
             <View style={styles.profileSocial}>
               <Text category="s2">Time</Text>
-              <Text category="c2">60 m</Text>
+              <Text category="c2">{counter.time} m</Text>
             </View>
             <View style={styles.profileSocial}>
               <Text category="s2">Visits</Text>
-              <Text category="c2">1</Text>
+              <Text category="c2">{counter.visit}</Text>
             </View>
           </View>
         </View>
@@ -290,7 +306,7 @@ export const ProfileScreen = ({ props }) => {
         <FlatList
           data={visits}
           renderItem={_renderVisitItem}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item._id}
           initialNumToRender={3}
           scrollEnabled
           //onEndReachedThreshold={0.01}

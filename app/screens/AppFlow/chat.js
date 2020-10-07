@@ -132,8 +132,8 @@ export const ChatScreen = ({ route, navigation }) => {
           type: "radio", // or 'checkbox'
           values: [
             {
-              title: "Red",
-              value: "Red",
+              title: "Ea",
+              value: 1,
             },
             {
               title: "Yellow",
@@ -147,11 +147,11 @@ export const ChatScreen = ({ route, navigation }) => {
         },
       },
       {
-        _id: 1,
+        _id: 10,
         text: `Benvenuto nel museo dell'Arte Classica\nFai un giro, le statue prenderanno vita!`,
         createdAt: new Date(),
         user: {
-          _id: 2,
+          _id: 21,
           name: "FAQ Bot",
           avatar:
             "https://www.italiaincammino.it/wp-content/uploads/2018/02/minerva-sapienza-1024x768.jpg",
@@ -185,6 +185,7 @@ export const ChatScreen = ({ route, navigation }) => {
   );
 
   function onSend(messages = []) {
+    console.log("Send messages : " + JSON.stringify(messages));
     setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
     }));

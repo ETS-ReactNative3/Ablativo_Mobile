@@ -13,9 +13,12 @@ import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { beaconSetup } from "./chat";
 import { CONST } from "../../../config";
 import { Icon } from "@ui-kitten/components";
+import { getRoomByID } from "../../repository/appRepository";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
+
+const roomID = "fcf8bbd9-57a7-4871-aa4a-5a56008b7efc";
 const statue = [
   {
     name: "Zeus",
@@ -42,10 +45,20 @@ const statue = [
     description: "Marmo, 134 a.C, replica",
   },
 ];
+
 export const HomeScreen = ({ navigation }) => {
+  const [roomName, setRoomName] = useState("");
+  const [artworks, setArtworks] = useState("");
+
+  const handleRoom = (data) => {
+    setRoomName(data.roomName);
+    setArtworks(data.artworks)
+  };
+
   React.useEffect(() => {
     beaconSetup();
-  });
+    getRoomByID(roomID, handleRoom);
+  }, []);
   const likeRef = React.createRef();
 
   const _renderStatue = (element) => {
@@ -113,7 +126,7 @@ export const HomeScreen = ({ navigation }) => {
           <Text style={[styles.infoText, styles.centerStyle]}>
             Sei entrato nella stanza
           </Text>
-          <Text style={[styles.roomText, styles.centerStyle]}> Stanza 2</Text>
+          <Text style={[styles.roomText, styles.centerStyle]}> {roomName}</Text>
           <Text style={[styles.extraText, styles.centerStyle]}>
             Ti sta piacendo? Lascia un like tramite shake!
           </Text>
@@ -126,10 +139,10 @@ export const HomeScreen = ({ navigation }) => {
           />
         </View>
       </View>
-      <View style={{flex: 1, margin: 10 }}>
+      <View style={{ flex: 1, margin: 10 }}>
         <Text style={styles.descriptionText}>Staute</Text>
         <FlatList
-          data={statue}
+          data={artworks}
           renderItem={_renderStatue}
           keyExtractor={(item) => item.name + "_" + item.index}
           vertical={true}
