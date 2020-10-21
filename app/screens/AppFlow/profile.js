@@ -62,6 +62,7 @@ export const ProfileScreen = ({ props }) => {
   const [viewState, setViewState] = useState(true);
   const [counter, setCounter] = useState({});
   const [visits, setVisits] = useState([]);
+
   const animatedStyle = {
     height: animationValue,
   };
@@ -94,11 +95,10 @@ export const ProfileScreen = ({ props }) => {
   async function retrieveData(data) {
     try {
       var profile = data[0];
-
       setCounter(profile.counter);
       setName(profile.username);
     } catch (e) {
-      // Restoring token failed
+      // Restoring data failed
       console.log("Cannot retrieve profile Info " + e);
     }
   }

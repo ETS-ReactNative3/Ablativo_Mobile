@@ -9,12 +9,19 @@ export const CONST = {
     CHATLIST: 0,
     CHAT: 1,
   },
+  VISIT_FLAG: {
+    END: 0,
+    START: 1,
+
+  }
 };
 
 export function dateFormatter(date) {
-  var day = date.getDate();
-  var year = date.getFullYear();
-  var month = date.getMonth() + 1;
+  var today = new Date(date);
+  
+  var day = today.getDate();
+  var year = today.getFullYear();
+  var month = today.getMonth() + 1;
   switch (month) {
     case 1:
       return day + " gen " + year;

@@ -9,7 +9,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import { HomeScreen } from "../screens/AppFlow/home";
 import { ProfileScreen } from "../screens/AppFlow/profile";
-import { ChatScreen } from "../screens/AppFlow/chat";
+import { ChatWrapper } from "../screens/AppFlow/chatWrapper";
 import { ChatList } from "../screens/AppFlow/chatList";
 /* import { Login } from './screens/login';
 import { SignIn } from './screens/signin'; */
@@ -52,7 +52,7 @@ const TabNavigator = () => (
     <Screen name="Profile" component={ProfileScreen} />
     <Screen
       name="Chat"
-      component={ChatScreen}
+      component={ChatWrapper}
       options={{ tabBarVisible: false }}
     />
   </Navigator>

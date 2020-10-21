@@ -8,55 +8,87 @@ import {
   Dimensions,
   FlatList,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
-import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { beaconSetup } from "./chat";
 import { CONST } from "../../../config";
 import { Icon } from "@ui-kitten/components";
 import { getRoomByID } from "../../repository/appRepository";
+import { saveData } from "../../repository/utility";
+import { startPollingTelemetries } from "../../repository/sensorRepository";
+import {
+  accelerometer,
+  gyroscope,
+  setUpdateIntervalForType,
+  SensorTypes,
+} from "react-native-sensors";
+import { map, filter } from "rxjs/operators";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
 
-const roomID = "fcf8bbd9-57a7-4871-aa4a-5a56008b7efc";
-const statue = [
-  {
-    name: "Zeus",
-    artista: "Artista anonimo",
-    image: "https://picsum.photos/710",
-    description: "Marmo, 134 a.C, replica",
-  },
-  {
-    name: "Minerva",
-    artista: "Artista anonimo",
-    image: "https://picsum.photos/750",
-    description: "Marmo, 324 a.C, replica",
-  },
-  {
-    name: "Plutarco",
-    artista: "Artista anonimo",
-    image: "https://picsum.photos/720",
-    description: "Bronzo, 654 a.C, replica",
-  },
-  {
-    name: "Marte",
-    artista: "Artista anonimo",
-    image: "https://picsum.photos/730",
-    description: "Marmo, 134 a.C, replica",
-  },
-];
+const roomID = "a936eb9d-6907-4bac-bdc6-c71eb2efff74";
 
 export const HomeScreen = ({ navigation }) => {
+  const [visitFlag, setVisitFlag] = useState(CONST.VISIT_FLAG.START);
+  const [subscriptionAccelerometer, setSubscriptionAccelerometer] = useState(
+    ""
+  );
+  const [subscriptionGyroscope, setSubscriptionGyroscope] = useState("");
   const [roomName, setRoomName] = useState("");
   const [artworks, setArtworks] = useState("");
+  const [storedTelemetries, setStoredTelemetries] = useState([]);
+
+  async function startPollingTelemetries(type) {
+    setUpdateIntervalForType(SensorTypes.accelerometer, 60000 ); // defaults to 100ms
+    setUpdateIntervalForType(SensorTypes.gyroscope, 60000); // defaults to 100ms
+
+    var subs_a;
+    var subs_g;
+    var event_a;
+    var event_g;
+    var tempTelemetries = storedTelemetries;
+
+    subscriptionAccelerometer == ""
+      ? (subs_a = accelerometer.subscribe(({ x, y, z, timestamp }) => {
+          event_a = { sensor: "Accelerometer", x, y, z, timestamp };
+          tempTelemetries.push(event_a);
+        }))
+      : (subs_a = subscriptionAccelerometer);
+
+    subscriptionGyroscope == ""
+      ? (subs_g = gyroscope.subscribe(({ x, y, z, timestamp }) => {
+          event_g = { sensor: "Gyroscope", x, y, z, timestamp };
+          tempTelemetries.push(event_g);
+        }))
+      : (subs_g = subscriptionGyroscope);
+
+
+    if (type == CONST.VISIT_FLAG.END) {
+      console.log("Stop polling");
+      console.log(tempTelemetries);
+      setStoredTelemetries(tempTelemetries);
+      setVisitFlag(CONST.VISIT_FLAG.START);
+      subs_a.unsubscribe();
+      subs_g.unsubscribe();
+      setSubscriptionAccelerometer("");
+      setSubscriptionGyroscope("");
+    } else {
+      console.log("Start polling");
+      setVisitFlag(CONST.VISIT_FLAG.END);
+      setSubscriptionAccelerometer(subs_a);
+      setSubscriptionGyroscope(subs_g);
+    }
+  }
 
   const handleRoom = (data) => {
     setRoomName(data.roomName);
-    setArtworks(data.artworks)
+    setArtworks(data.artworks);
   };
 
   React.useEffect(() => {
     beaconSetup();
+    saveData("roomID", roomID); // retreived from beacon
     getRoomByID(roomID, handleRoom);
   }, []);
   const likeRef = React.createRef();
@@ -140,11 +172,41 @@ export const HomeScreen = ({ navigation }) => {
         </View>
       </View>
       <View style={{ flex: 1, margin: 10 }}>
+        <TouchableOpacity
+          style={{
+            width: screenWidth * 0.55,
+            height: 35,
+            elevation: 10,
+            backgroundColor: "white",
+            borderWidth: 2,
+            borderColor: "#50A0D5",
+            borderRadius: 10,
+            justifyContent: "center",
+            alignContent: "center",
+            alignSelf: "center",
+            margin: 10,
+          }}
+          onPress={() => startPollingTelemetries(visitFlag)}
+        >
+          <Text
+            style={{
+              justifyContent: "center",
+              alignContent: "center",
+              alignSelf: "center",
+              fontWeight: "bold",
+              color: "#50A0D5",
+            }}
+          >
+            {visitFlag == CONST.VISIT_FLAG.START
+              ? "Inizia visita"
+              : "Concludi visita"}
+          </Text>
+        </TouchableOpacity>
         <Text style={styles.descriptionText}>Staute</Text>
         <FlatList
           data={artworks}
           renderItem={_renderStatue}
-          keyExtractor={(item) => item.name + "_" + item.index}
+          keyExtractor={(item, index) => item.name + "_" + index}
           vertical={true}
           scrollEnabled={true}
         />

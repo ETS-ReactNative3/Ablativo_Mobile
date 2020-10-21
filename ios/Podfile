@@ -56,6 +56,8 @@ target 'Ablativo_Mobile' do
 
   pod 'react-native-dialogflow', :path => '../node_modules/react-native-dialogflow'
 
+  pod 'RNSensors', :path => '../node_modules/react-native-sensors'
+
   target 'Ablativo_MobileTests' do
     inherit! :complete
     # Pods for testing

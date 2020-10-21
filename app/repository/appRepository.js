@@ -16,9 +16,9 @@ export async function getMyInfo(callback) {
     .then((response) => {
       console.log(response.status);
       if (response.status == "200") {
-        /*     console.log(
+        /*console.log(
           "DEBUG : getMyInfo : " + JSON.stringify(response, undefined, 4)
-        ); */
+        );*/
         callback(response.data);
       } else {
         /*       console.log(
@@ -34,7 +34,7 @@ export async function getMyInfo(callback) {
 
 export async function getMyVisits(callback) {
   var token = await retrieveData("userToken");
-  await fetch(address + "api/user/getMyVisits" + "?token=" + token, {
+  await fetch(address + "api/user/getMyVisit" + "?token=" + token, {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -62,9 +62,8 @@ export async function getMyVisits(callback) {
 }
 
 export async function getRoomByID(roomID, callback) {
-  var token = await retrieveData("userToken");
   await fetch(
-    address + "api/user/getRoomByID" + "?token=" + token + "&roomID=" + roomID,
+    address + "dashapi/room/getRoomByID?roomID=" + roomID,
     {
       method: "GET",
       headers: {

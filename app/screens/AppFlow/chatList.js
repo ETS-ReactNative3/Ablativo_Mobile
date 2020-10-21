@@ -10,28 +10,43 @@ import {
 import { Icon } from "@ui-kitten/components";
 import { ChatHeader } from "../../components/chatHeader";
 import { CONST, dateFormatter } from "../../../config";
-
-const initialMessages = [
-  {
-    id: 1,
-    username: "Costantino",
-    message: "Lo sai che nella chiesa ortodossa ono considerato santo?",
-    avatar: "https://picsum.photos/300",
-    date: new Date(),
-    isRead: false,
-  },
-  {
-    id: 2,
-    username: "GrandeCapo",
-    message: "Questo è un art attack",
-    avatar: "https://picsum.photos/200",
-    date: new Date(),
-    isRead: false,
-  },
-];
+import { getChatList } from "../../repository/chatRepository";
+import { retrieveData } from "../../repository/utility";
 
 export const ChatList = ({ navigation }) => {
-  
+  const [chatList, setChatList] = useState("");
+  const [roomID, setRoomID] = useState("");
+  const [ownName, setOwnName] = useState("");
+  const [mentor, setMentor] = useState("");
+
+  async function retreiveRoomID() {
+    var id = await retrieveData("roomID");
+    id != undefined || id != ""
+      ? setRoomID(id)
+      : console.log("No roomID to fetch");
+  }
+
+  async function retreiveUserInfo() {
+    var userName = await retrieveData("userName");
+    var mentor = await retrieveData("userMentor");
+    
+    setOwnName(userName);
+    setMentor(mentor);
+  }
+  React.useEffect(() => {
+    retreiveRoomID();
+    retreiveUserInfo();
+  }, []);
+
+  React.useEffect(() => {
+    if (roomID != "") {
+      console.log(roomID);
+      getChatList(roomID, setChatList);
+    } else {
+      console.log("No roomID stored");
+    }
+  }, [roomID]);
+
   const _renderChatList = (element) => {
     const item = element.item;
     const messagePreview = item.message;
@@ -44,8 +59,8 @@ export const ChatList = ({ navigation }) => {
               chat: item,
               ownName: "ownName",
               ownPic: "ownPic",
-              otherName: item.username,
-              otherPic: item.avatar,
+              ownName: ownName,
+              mentor: mentor,
             })
           }
           style={styles.chatItemContainer}
@@ -85,10 +100,9 @@ export const ChatList = ({ navigation }) => {
         type={CONST.HEADER_TYPE.CHATLIST}
         name={"Museo dei gessi"}
         subtitle={"Sapienza"}
-
       />
       <FlatList
-        data={initialMessages}
+        data={chatList}
         renderItem={_renderChatList}
         keyExtractor={(item) => item.id + "_" + item.index}
         ItemSeparatorComponent={() => (
