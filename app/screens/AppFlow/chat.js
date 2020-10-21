@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   SafeAreaView,
   Alert,
@@ -125,6 +125,8 @@ export const ChatScreen = ({
   const [messages, setMessages] = useState([]);
   const [quickReplies, setQuickReplies] = useState("");
   const [user, setUser] = useState({});
+  const [artworkUser, setArtworkUser] = useState({});
+  const [isTyping, setIsTyping] = useState(false);
 
   async function retrieveChat() {
     console.log(artworkID);
@@ -141,9 +143,16 @@ export const ChatScreen = ({
       var user = {
         _id: chatDetails._id.split("_")[0],
         name: ownName,
-        avatar: ownPic
-      }
+        avatar: ownPic,
+      };
+      var artworkUser = {
+        _id: artworkID,
+        name: chatDetails.artworkName,
+        avatar: chatDetails.artworkAvatar,
+      };
+
       setUser(user);
+      setArtworkUser(artworkUser);
     }
   }, [chatDetails]);
 
@@ -164,24 +173,37 @@ export const ChatScreen = ({
     setMessages(messagesAux);
   }
 
-  function onSend(newMessages = []) {
-    console.log("Send messages : " + JSON.stringify(newMessages));
-    setMessages([...messages, newMessages])
- 
-  }
+  const onSend = useCallback((messages = []) => {
+    setMessages((previousMessages) =>
+      GiftedChat.append(previousMessages, messages)
+    );
+  }, []);
 
   const onQuickReply = (replies) => {
     const createdAt = new Date();
     if (replies.length === 1) {
-      console.log(replies);
+      console.log(replies[0]);
       onSend([
         {
-          createdAt,
+          createdAt: createdAt,
           _id: Math.round(Math.random() * 1000000),
           text: replies[0].title,
-          user,
+          user: user,
         },
       ]);
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        onSend([
+          {
+            createdAt: createdAt,
+            _id: Math.round(Math.random() * 1000000),
+            text: chatDetails.artworkQuestions.A[replies[0].value],
+            user: artworkUser,
+           
+          },
+        ]);
+      }, 4000);
     } else {
       console.log("replies param is not set correctly");
     }
@@ -203,13 +225,12 @@ export const ChatScreen = ({
       <GiftedChat
         messages={messages}
         onSend={(messages) => onSend(messages)}
-        user={{
-          _id: 1,
-        }}
+        user={user}
         showAvatarForEveryMessage={true}
         onQuickReply={onQuickReply}
         alignTop={true}
         renderInputToolbar={() => null}
+        isTyping={isTyping}
       />
     </SafeAreaView>
   );
