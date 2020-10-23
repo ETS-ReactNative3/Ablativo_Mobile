@@ -6,7 +6,7 @@ import { ChatScreen } from "./chat";
 
 export const ChatWrapper = ({ route, navigation }) => {
   const chat = route.params.chat;
-  const chatId = chat.chatID;
+  const chatId = chat.chatId;
   const username = chat.username;
   const otherPic = otherPic;
   const mentor = route.params.mentor;

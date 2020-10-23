@@ -6,13 +6,15 @@ import {
   NativeEventEmitter,
   Platform,
   PermissionsAndroid,
+  View,
 } from "react-native";
 
 import { GiftedChat } from "react-native-gifted-chat";
 import Kontakt, { KontaktModule } from "react-native-kontaktio";
 import { ChatHeader } from "../../components/chatHeader";
 import { CONST } from "../../../config";
-import { createChat } from "../../repository/chatRepository";
+import { createChat, sendMessage } from "../../repository/chatRepository";
+import { Value } from "react-native-reanimated";
 
 const { connect, init, startDiscovery, startScanning } = Kontakt;
 const kontaktEmitter = new NativeEventEmitter(KontaktModule);
@@ -122,14 +124,13 @@ export const ChatScreen = ({
   navigation,
 }) => {
   const [chatDetails, setChatDetails] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [quickReplies, setQuickReplies] = useState("");
+  const [messages, setMessages] = useState("");
+  const [storedReplies, setStoredReplies] = useState("");
   const [user, setUser] = useState({});
   const [artworkUser, setArtworkUser] = useState({});
   const [isTyping, setIsTyping] = useState(false);
 
   async function retrieveChat() {
-    console.log(artworkID);
     await createChat(artworkID, setChatDetails);
   }
 
@@ -139,44 +140,63 @@ export const ChatScreen = ({
 
   useEffect(() => {
     if (chatDetails) {
-      appendQuickReplies();
       var user = {
-        _id: chatDetails._id.split("_")[0],
+        _id: chatDetails?._id.split("_")[0],
         name: ownName,
         avatar: ownPic,
       };
       var artworkUser = {
         _id: artworkID,
-        name: chatDetails.artworkName,
-        avatar: chatDetails.artworkAvatar,
+        name: chatDetails?.artworkName,
+        avatar: chatDetails?.artworkAvatar,
       };
 
       setUser(user);
       setArtworkUser(artworkUser);
+      appendQuickReplies();
     }
   }, [chatDetails]);
 
   function appendQuickReplies() {
-    var questions = chatDetails.artworkQuestions.Q;
-    var quickReplies = [];
+    if (chatDetails) {
+      var questions = chatDetails?.artworkQuestions.Q;
+      var quickReplies = [];
 
-    questions.map((item, index) =>
-      quickReplies.push({ title: item, value: index })
-    );
+      questions.map((item, index) =>
+        quickReplies.push({ title: item, value: index })
+      );
 
-    var messagesAux = chatDetails.messages;
-    messagesAux[chatDetails.messages.length - 1].quickReplies = {
-      type: "radio",
-      values: quickReplies,
-    };
-    console.log(JSON.stringify(messagesAux));
-    setMessages(messagesAux);
+      var messagesAux = messages != "" ? messages : chatDetails?.messages;
+      var position =
+        messages != "" ? messages.length - 1 : chatDetails?.messages.length - 1;
+
+      console.log('====================================');
+      console.log(position);
+      console.log(messagesAux);
+      console.log('====================================');
+      
+      messagesAux[position > 0 ? position : 0].quickReplies = {
+
+        type: "radio",
+        values: quickReplies,
+      };
+
+      if (storedReplies == "")
+        setStoredReplies({ type: "radio", values: quickReplies });
+
+      setMessages(messagesAux);
+    } else {
+      console.log("Errore retrieving chatDetails");
+    }
   }
 
-  const onSend = useCallback((messages = []) => {
-    setMessages((previousMessages) =>
-      GiftedChat.append(previousMessages, messages)
-    );
+  const onSend = useCallback((msg) => {
+    var temp = messages;
+
+        temp.push(msg[0])
+    setMessages(temp);
+
+    sendMessage(msg[0], chatId);
   }, []);
 
   const onQuickReply = (replies) => {
@@ -200,7 +220,7 @@ export const ChatScreen = ({
             _id: Math.round(Math.random() * 1000000),
             text: chatDetails.artworkQuestions.A[replies[0].value],
             user: artworkUser,
-           
+            quickReplies: storedReplies,
           },
         ]);
       }, 4000);
@@ -223,14 +243,16 @@ export const ChatScreen = ({
       />
 
       <GiftedChat
+        messageIdGenerator={() => Math.floor(Math.random() * 10000) + 1}
         messages={messages}
-        onSend={(messages) => onSend(messages)}
+        onSend={(message) => onSend(message)}
         user={user}
         showAvatarForEveryMessage={true}
         onQuickReply={onQuickReply}
         alignTop={true}
-        renderInputToolbar={() => null}
+        renderInputToolbar={() => <View />}
         isTyping={isTyping}
+        inverted={false}
       />
     </SafeAreaView>
   );

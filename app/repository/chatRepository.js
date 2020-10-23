@@ -51,14 +51,49 @@ export async function createChat(artworkID, callback) {
       if (response.status == "200") {
         console.log(
           "DEBUG : createChat : " + JSON.stringify(response, undefined, 4)
-        ); 
+        );
 
-        console.log(response.questions)
+        console.log(response.questions);
         callback(response.data);
       } else {
-       /*    console.log(
+        /*    console.log(
           "DEBUG : createChat : " + JSON.stringify(response, undefined, 4)
         ); */
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export async function sendMessage(message, chatID) {
+  var token = await retrieveData("userToken");
+    console.log("\n\n" + JSON.stringify(message)+ "\n\n"+ chatID + "\n\n\n");
+  
+  await fetch(address + "api/chat/sendMessage?token=" + token, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: message.text,
+      user: message.user,
+      chatID: chatID,
+    }),
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      if (response.status == "200") {
+        console.log(
+          "DEBUG : createChat : " + JSON.stringify(response, undefined, 4)
+        );
+
+        console.log(response.questions);
+      } else {
+        console.log(
+          "DEBUG : createChat : " + JSON.stringify(response, undefined, 4)
+        );
       }
     })
     .catch((error) => {
