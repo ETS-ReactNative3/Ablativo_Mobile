@@ -176,7 +176,6 @@ export const ChatScreen = ({
       console.log('====================================');
       
       messagesAux[position > 0 ? position : 0].quickReplies = {
-
         type: "radio",
         values: quickReplies,
       };
@@ -193,10 +192,17 @@ export const ChatScreen = ({
   const onSend = useCallback((msg) => {
     var temp = messages;
 
-        temp.push(msg[0])
-    setMessages(temp);
+    console.log(temp);
 
-    sendMessage(msg[0], chatId);
+    try {
+      temp.push(msg[0]);
+      setMessages(temp);
+    } catch (error) {
+      console.error("Error on send : " + error)
+    } finally {
+      sendMessage(msg[0], chatId);
+    }
+    
   }, []);
 
   const onQuickReply = (replies) => {
