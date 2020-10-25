@@ -170,3 +170,73 @@ export async function createVisit(museum, location, image, callback) {
       console.error(error);
     });
 }
+
+export async function upvoteRoom(roomID, value, callback) {
+  var token = await retrieveData("userToken");
+  await fetch(address + "api/room/upvoteRoom", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      token: token,
+      roomID: roomID,
+      value: value,
+    }),
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      console.log(response.status);
+      if (response.status == "200") {
+        console.log(
+          "DEBUG : upvoteRoom : " + JSON.stringify(response, undefined, 4)
+        );
+        callback(value);
+      } else {
+        console.log(
+          "DEBUG : upvoteRoom : " + JSON.stringify(response, undefined, 4)
+        );
+        Toast.show("Upvote error please try again in some minutes!", Toast.SHORT);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+
+export async function upvoteArtwork(artworkID, value, callback) {
+  var token = await retrieveData("userToken");
+  await fetch(address + "/api/room/upvoteArwork", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      token: token,
+      artworkID: artworkID,
+      value: value,
+    }),
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      console.log(response.status);
+      if (response.status == "200") {
+        console.log(
+          "DEBUG : upvoteArtwork : " + JSON.stringify(response, undefined, 4)
+        );
+        //callback(response.data);
+        callback(value);
+      } else {
+        console.log(
+          "DEBUG : upvoteArtwork : " + JSON.stringify(response, undefined, 4)
+        );
+        Toast.show("Upvote error please try again in some minutes!", Toast.SHORT);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}

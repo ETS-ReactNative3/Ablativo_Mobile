@@ -13,7 +13,11 @@ import {
 import { beaconSetup } from "./chat";
 import { CONST } from "../../../config";
 import { Icon } from "@ui-kitten/components";
-import { getRoomByID } from "../../repository/appRepository";
+import {
+  getRoomByID,
+  upvoteArtwork,
+  upvoteRoom,
+} from "../../repository/appRepository";
 import { saveData } from "../../repository/utility";
 import { startPollingTelemetries } from "../../repository/sensorRepository";
 import {
@@ -23,6 +27,8 @@ import {
   SensorTypes,
 } from "react-native-sensors";
 import { map, filter } from "rxjs/operators";
+import Toast from "react-native-rn-toast";
+import RNShakeEvent from "react-native-shake-event";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
@@ -38,9 +44,11 @@ export const HomeScreen = ({ navigation }) => {
   const [roomName, setRoomName] = useState("");
   const [artworks, setArtworks] = useState("");
   const [storedTelemetries, setStoredTelemetries] = useState([]);
+  const [roomUpvoted, setRoomUpvoted] = useState(-1);
+  const [artworksUpvoted, setArtworksUpvoted] = useState([]);
 
   async function startPollingTelemetries(type) {
-    setUpdateIntervalForType(SensorTypes.accelerometer, 60000 ); // defaults to 100ms
+    setUpdateIntervalForType(SensorTypes.accelerometer, 60000); // defaults to 100ms
     setUpdateIntervalForType(SensorTypes.gyroscope, 60000); // defaults to 100ms
 
     var subs_a;
@@ -63,7 +71,6 @@ export const HomeScreen = ({ navigation }) => {
         }))
       : (subs_g = subscriptionGyroscope);
 
-
     if (type == CONST.VISIT_FLAG.END) {
       console.log("Stop polling");
       console.log(tempTelemetries);
@@ -84,12 +91,19 @@ export const HomeScreen = ({ navigation }) => {
   const handleRoom = (data) => {
     setRoomName(data.roomName);
     setArtworks(data.artworks);
+
+    var upvotes = new Array(artworks.length).fill(0);
+    setArtworksUpvoted(upvotes);
   };
 
   React.useEffect(() => {
     beaconSetup();
     saveData("roomID", roomID); // retreived from beacon
     getRoomByID(roomID, handleRoom);
+
+    RNShakeEvent.addEventListener("shake", () => {
+      upvoteRoom(roomID, -roomUpvoted, setRoomUpvoted);
+    });
   }, []);
   const likeRef = React.createRef();
 
@@ -134,7 +148,10 @@ export const HomeScreen = ({ navigation }) => {
               />
             </TouchableWithoutFeedback>
             <TouchableWithoutFeedback
-              onPress={() => likeRef.current.startAnimation()}
+              onPress={() => {
+                upvoteArtwork();
+                likeRef.current.startAnimation();
+              }}
             >
               <Icon
                 width={30}

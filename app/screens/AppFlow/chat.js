@@ -121,12 +121,17 @@ export const ChatScreen = ({
   ownName,
   ownPic,
   artworkID,
+  userId,
   navigation,
 }) => {
   const [chatDetails, setChatDetails] = useState("");
-  const [messages, setMessages] = useState("");
+  const [messages, setMessages] = useState([]);
   const [storedReplies, setStoredReplies] = useState("");
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState({
+    _id: userId,
+    name: ownName,
+    avatar: ownPic,
+  });
   const [artworkUser, setArtworkUser] = useState({});
   const [isTyping, setIsTyping] = useState(false);
 
@@ -140,18 +145,13 @@ export const ChatScreen = ({
 
   useEffect(() => {
     if (chatDetails) {
-      var user = {
-        _id: chatDetails?._id.split("_")[0],
-        name: ownName,
-        avatar: ownPic,
-      };
+     
       var artworkUser = {
         _id: artworkID,
         name: chatDetails?.artworkName,
         avatar: chatDetails?.artworkAvatar,
       };
 
-      setUser(user);
       setArtworkUser(artworkUser);
       appendQuickReplies();
     }
@@ -166,15 +166,12 @@ export const ChatScreen = ({
         quickReplies.push({ title: item, value: index })
       );
 
-      var messagesAux = messages != "" ? messages : chatDetails?.messages;
+      var messagesAux = messages.length > 0 ? messages : chatDetails?.messages;
       var position =
-        messages != "" ? messages.length - 1 : chatDetails?.messages.length - 1;
+        messages.length > 0
+          ? messages.length - 1
+          : chatDetails?.messages.length - 1;
 
-      console.log('====================================');
-      console.log(position);
-      console.log(messagesAux);
-      console.log('====================================');
-      
       messagesAux[position > 0 ? position : 0].quickReplies = {
         type: "radio",
         values: quickReplies,
@@ -198,11 +195,10 @@ export const ChatScreen = ({
       temp.push(msg[0]);
       setMessages(temp);
     } catch (error) {
-      console.error("Error on send : " + error)
+      console.error("Error on send : " + error);
     } finally {
       sendMessage(msg[0], chatId);
     }
-    
   }, []);
 
   const onQuickReply = (replies) => {
@@ -256,7 +252,7 @@ export const ChatScreen = ({
         showAvatarForEveryMessage={true}
         onQuickReply={onQuickReply}
         alignTop={true}
-        renderInputToolbar={() => <View />}
+        renderInputToolbar={() => <View style={{ height: 0 }} />}
         isTyping={isTyping}
         inverted={false}
       />

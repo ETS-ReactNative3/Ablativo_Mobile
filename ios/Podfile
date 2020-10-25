@@ -58,6 +58,8 @@ target 'Ablativo_Mobile' do
 
   pod 'RNSensors', :path => '../node_modules/react-native-sensors'
 
+
+
   target 'Ablativo_MobileTests' do
     inherit! :complete
     # Pods for testing

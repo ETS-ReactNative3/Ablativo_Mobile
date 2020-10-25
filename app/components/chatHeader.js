@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     elevation: 6,
     backgroundColor: "white",
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 0,
     padding: 5,
   },
   nameContainer: { flex: 1 },
