@@ -62,16 +62,13 @@ export async function getMyVisits(callback) {
 }
 
 export async function getRoomByID(roomID, callback) {
-  await fetch(
-    address + "dashapi/room/getRoomByID?roomID=" + roomID,
-    {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    }
-  )
+  await fetch(address + "dashapi/room/getRoomByID?roomID=" + roomID, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  })
     .then((response) => response.json())
     .then((response) => {
       console.log(response.status);
@@ -133,7 +130,15 @@ export async function getStatueByID(statueID, callback) {
     });
 }
 
-export async function createVisit(museum, location, image, callback) {
+export async function createVisit(
+  museum,
+  location,
+  image,
+  subs_a,
+  subs_g,
+  subs_h,
+  callback
+) {
   var token = await retrieveData("userToken");
   await fetch(address + "api/user/createVisit", {
     method: "POST",
@@ -158,12 +163,56 @@ export async function createVisit(museum, location, image, callback) {
         console.log(
           "DEBUG : createVisit : " + JSON.stringify(response, undefined, 4)
         );
-        //callback(response.data);
+        callback(subs_a, subs_g, subs_h,);
       } else {
         console.log(
           "DEBUG : createVisit : " + JSON.stringify(response, undefined, 4)
         );
         Toast.show("Impossibile creare la visita", Toast.SHORT);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export async function endVisit(
+  visitID,
+  telemetries,
+  subs_a,
+  subs_g,
+  subs_h,
+  callback
+) {
+  var token = await retrieveData("userToken");
+  console.log("====================================");
+  console.log(telemetries);
+  console.log("====================================");
+  await fetch(address + "api/user/endVisit", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      telemetries: telemetries,
+      token: token,
+      visitID: visitID,
+    }),
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      console.log(response.status);
+      if (response.status == "200") {
+        console.log(
+          "DEBUG : endVisit : " + JSON.stringify(response, undefined, 4)
+        );
+        callback(telemetries, subs_a, subs_g, subs_h, response.data);
+      } else {
+        console.log(
+          "DEBUG : endVisit : " + JSON.stringify(response, undefined, 4)
+        );
+        Toast.show("Impossibile concludere la visita", Toast.SHORT);
       }
     })
     .catch((error) => {
@@ -197,14 +246,16 @@ export async function upvoteRoom(roomID, value, callback) {
         console.log(
           "DEBUG : upvoteRoom : " + JSON.stringify(response, undefined, 4)
         );
-        Toast.show("Upvote error please try again in some minutes!", Toast.SHORT);
+        Toast.show(
+          "Upvote error please try again in some minutes!",
+          Toast.SHORT
+        );
       }
     })
     .catch((error) => {
       console.error(error);
     });
 }
-
 
 export async function upvoteArtwork(artworkID, value, callback) {
   var token = await retrieveData("userToken");
@@ -233,7 +284,10 @@ export async function upvoteArtwork(artworkID, value, callback) {
         console.log(
           "DEBUG : upvoteArtwork : " + JSON.stringify(response, undefined, 4)
         );
-        Toast.show("Upvote error please try again in some minutes!", Toast.SHORT);
+        Toast.show(
+          "Upvote error please try again in some minutes!",
+          Toast.SHORT
+        );
       }
     })
     .catch((error) => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -19,7 +19,6 @@ import {
   upvoteRoom,
 } from "../../repository/appRepository";
 import { saveData } from "../../repository/utility";
-import { startPollingTelemetries } from "../../repository/sensorRepository";
 import {
   accelerometer,
   gyroscope,
@@ -28,6 +27,7 @@ import {
 } from "react-native-sensors";
 import { map, filter } from "rxjs/operators";
 import Toast from "react-native-rn-toast";
+import { createVisit, endVisit } from "../../repository/appRepository";
 import RNShakeEvent from "react-native-shake-event";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
@@ -41,21 +41,48 @@ export const HomeScreen = ({ navigation }) => {
     ""
   );
   const [subscriptionGyroscope, setSubscriptionGyroscope] = useState("");
+  const [subscriptionHeartRate, setSubscriptionHeartRate] = useState("");
+
   const [roomName, setRoomName] = useState("");
   const [artworks, setArtworks] = useState("");
   const [storedTelemetries, setStoredTelemetries] = useState([]);
+
   const [roomUpvoted, setRoomUpvoted] = useState(-1);
   const [artworksUpvoted, setArtworksUpvoted] = useState([]);
+  const [visitID, setVisitID] = useState("");
+
+  async function handleEndVisit(telemetries, subs_a, subs_g, subs_h) {
+    console.log(telemetries);
+    setStoredTelemetries(telemetries);
+    setVisitFlag(CONST.VISIT_FLAG.START);
+    subs_a.unsubscribe();
+    subs_g.unsubscribe();
+    subs_h.clearInterval();
+    setSubscriptionHeartRate("");
+    setSubscriptionAccelerometer("");
+    setSubscriptionGyroscope("");
+    setVisitID("");
+  }
+
+  async function handleStartVisit(subs_a, subs_g, subs_h, visitID) {
+    setVisitFlag(CONST.VISIT_FLAG.END);
+    setSubscriptionAccelerometer(subs_a);
+    setSubscriptionGyroscope(subs_g);
+    setSubscriptionHeartRate(subs_h);
+    setVisitID(visitID);
+  }
 
   async function startPollingTelemetries(type) {
     setUpdateIntervalForType(SensorTypes.accelerometer, 60000); // defaults to 100ms
     setUpdateIntervalForType(SensorTypes.gyroscope, 60000); // defaults to 100ms
 
-    var subs_a;
-    var subs_g;
-    var event_a;
-    var event_g;
-    var tempTelemetries = storedTelemetries;
+    let subs_a;
+    let subs_g;
+    let subs_h = subscriptionHeartRate;
+    let event_a;
+    let event_g;
+    let event_h;
+    let tempTelemetries = storedTelemetries;
 
     subscriptionAccelerometer == ""
       ? (subs_a = accelerometer.subscribe(({ x, y, z, timestamp }) => {
@@ -71,20 +98,35 @@ export const HomeScreen = ({ navigation }) => {
         }))
       : (subs_g = subscriptionGyroscope);
 
+    if (subscriptionHeartRate == "") {
+      subs_h = setInterval(() => {
+        event_h = {
+          sensor: "Heartrate",
+          timestamp: Date.now(),
+          value: Math.floor(Math.random() * 130) + 50,
+        };
+        tempTelemetries.push(event_h);
+        console.log(event_h);
+      }, 60000);
+    }
+
     if (type == CONST.VISIT_FLAG.END) {
       console.log("Stop polling");
-      console.log(tempTelemetries);
-      setStoredTelemetries(tempTelemetries);
-      setVisitFlag(CONST.VISIT_FLAG.START);
-      subs_a.unsubscribe();
-      subs_g.unsubscribe();
-      setSubscriptionAccelerometer("");
-      setSubscriptionGyroscope("");
+
+      endVisit(visitID, tempTelemetries, subs_a, subs_g, subs_h, handleEndVisit);
     } else {
       console.log("Start polling");
-      setVisitFlag(CONST.VISIT_FLAG.END);
-      setSubscriptionAccelerometer(subs_a);
-      setSubscriptionGyroscope(subs_g);
+
+      //in this phase we currently supports only Museo dei Gessi at Sapienza
+      createVisit(
+        "Museo dei Gessi",
+        "Sapienza",
+        "",
+        subs_a,
+        subs_g,
+        subs_h,
+        handleStartVisit
+      );
     }
   }
 
