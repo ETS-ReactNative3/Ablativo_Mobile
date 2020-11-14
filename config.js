@@ -12,8 +12,9 @@ export const CONST = {
   VISIT_FLAG: {
     END: 0,
     START: 1,
-
-  }
+    LOADING: 2,
+  },
+  MUSIC_STORAGE_LINK: 'http://192.168.1.201:8888/music/'
 };
 
 export function dateFormatter(date) {

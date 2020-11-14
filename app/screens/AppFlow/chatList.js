@@ -17,6 +17,7 @@ export const ChatList = ({ navigation }) => {
   const [chatList, setChatList] = useState("");
   const [roomID, setRoomID] = useState("");
   const [ownName, setOwnName] = useState("");
+  const [mentorName, setMentorName] = useState("");
   const [mentor, setMentor] = useState("");
 
   async function retreiveRoomID() {
@@ -28,15 +29,21 @@ export const ChatList = ({ navigation }) => {
 
   async function retreiveUserInfo() {
     var userName = await retrieveData("userName");
-    var mentor = await retrieveData("userMentor");
-    
+    var mentorName = await retrieveData("userMentor");
+
+
+
     setOwnName(userName);
-    setMentor(mentor);
+    setMentorName(mentorName);
+
   }
+
   React.useEffect(() => {
     retreiveRoomID();
     retreiveUserInfo();
   }, []);
+
+ 
 
   React.useEffect(() => {
     if (roomID != "") {
@@ -57,10 +64,9 @@ export const ChatList = ({ navigation }) => {
           onPress={() =>
             navigation.navigate("Chat", {
               chat: item,
-              ownName: "ownName",
               ownPic: "ownPic",
               ownName: ownName,
-              mentor: mentor,
+              mentorName: mentorName,
             })
           }
           style={styles.chatItemContainer}

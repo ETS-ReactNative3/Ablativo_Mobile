@@ -16,9 +16,9 @@ export async function getMyInfo(callback) {
     .then((response) => {
       console.log(response.status);
       if (response.status == "200") {
-        /*console.log(
+        console.log(
           "DEBUG : getMyInfo : " + JSON.stringify(response, undefined, 4)
-        );*/
+        );
         callback(response.data);
       } else {
         /*       console.log(
@@ -76,7 +76,7 @@ export async function getRoomByID(roomID, callback) {
         console.log(
           "DEBUG : getRoomByID : " + JSON.stringify(response, undefined, 4)
         );
-        callback(response.data);
+        callback(response.appdata);
       } else {
         console.log(
           "DEBUG : getRoomByID : " + JSON.stringify(response, undefined, 4)
@@ -163,7 +163,7 @@ export async function createVisit(
         console.log(
           "DEBUG : createVisit : " + JSON.stringify(response, undefined, 4)
         );
-        callback(subs_a, subs_g, subs_h,);
+        callback(subs_a, subs_g, subs_h, response.data._id);
       } else {
         console.log(
           "DEBUG : createVisit : " + JSON.stringify(response, undefined, 4)
@@ -207,12 +207,13 @@ export async function endVisit(
         console.log(
           "DEBUG : endVisit : " + JSON.stringify(response, undefined, 4)
         );
-        callback(telemetries, subs_a, subs_g, subs_h, response.data);
+        callback(telemetries, subs_a, subs_g, subs_h);
       } else {
         console.log(
           "DEBUG : endVisit : " + JSON.stringify(response, undefined, 4)
         );
         Toast.show("Impossibile concludere la visita", Toast.SHORT);
+        callback(telemetries, subs_a, subs_g, subs_h);
       }
     })
     .catch((error) => {
@@ -288,6 +289,30 @@ export async function upvoteArtwork(artworkID, value, callback) {
           "Upvote error please try again in some minutes!",
           Toast.SHORT
         );
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export async function getMentorDetails(mentorName, callback) {
+  console.log("Mentor : " + mentorName);
+
+  await fetch(address + "mentor/getMentorByName?mentorName=" + mentorName, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      console.log("DEBUG : getMentorDetails : ", response.data[0]);
+      if (response.status == "200") {
+        callback(response.data[0]);
+      } else {
+        Toast.show("Login Error " + response.status, Toast.SHORT);
       }
     })
     .catch((error) => {

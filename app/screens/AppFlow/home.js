@@ -51,10 +51,13 @@ export const HomeScreen = ({ navigation }) => {
   const [artworksUpvoted, setArtworksUpvoted] = useState([]);
   const [visitID, setVisitID] = useState("");
 
+  const [visitState, setVisitState] = useState("Inizia visita");
+
   async function handleEndVisit(telemetries, subs_a, subs_g, subs_h) {
     console.log(telemetries);
     setStoredTelemetries(telemetries);
     setVisitFlag(CONST.VISIT_FLAG.START);
+    setVisitState("Inizia visita");
     subs_a.unsubscribe();
     subs_g.unsubscribe();
     subs_h.clearInterval();
@@ -66,6 +69,7 @@ export const HomeScreen = ({ navigation }) => {
 
   async function handleStartVisit(subs_a, subs_g, subs_h, visitID) {
     setVisitFlag(CONST.VISIT_FLAG.END);
+    setVisitState("Concludi visita");
     setSubscriptionAccelerometer(subs_a);
     setSubscriptionGyroscope(subs_g);
     setSubscriptionHeartRate(subs_h);
@@ -113,7 +117,16 @@ export const HomeScreen = ({ navigation }) => {
     if (type == CONST.VISIT_FLAG.END) {
       console.log("Stop polling");
 
-      endVisit(visitID, tempTelemetries, subs_a, subs_g, subs_h, handleEndVisit);
+      setVisitState("Elaborando la musica...");
+      setVisitFlag(CONST.VISIT_FLAG.LOADING);
+      endVisit(
+        visitID,
+        tempTelemetries,
+        subs_a,
+        subs_g,
+        subs_h,
+        handleEndVisit
+      );
     } else {
       console.log("Start polling");
 
@@ -130,11 +143,12 @@ export const HomeScreen = ({ navigation }) => {
     }
   }
 
-  const handleRoom = (data) => {
+  const handleRoom = (payload) => {
+    var data = payload[0];
     setRoomName(data.roomName);
     setArtworks(data.artworks);
 
-    var upvotes = new Array(artworks.length).fill(0);
+    var upvotes = new Array(data.artworks.length).fill(0);
     setArtworksUpvoted(upvotes);
   };
 
@@ -232,33 +246,58 @@ export const HomeScreen = ({ navigation }) => {
       </View>
       <View style={{ flex: 1, margin: 10 }}>
         <TouchableOpacity
-          style={{
-            width: screenWidth * 0.55,
-            height: 35,
-            elevation: 10,
-            backgroundColor: "white",
-            borderWidth: 2,
-            borderColor: "#50A0D5",
-            borderRadius: 10,
-            justifyContent: "center",
-            alignContent: "center",
-            alignSelf: "center",
-            margin: 10,
-          }}
-          onPress={() => startPollingTelemetries(visitFlag)}
+          style={
+            visitFlag == CONST.VISIT_FLAG.LOADING
+              ? {
+                  width: screenWidth * 0.55,
+                  height: 35,
+                  elevation: 10,
+                  backgroundColor: "white",
+                  borderWidth: 2,
+                  borderColor: "gray",
+                  borderRadius: 10,
+                  justifyContent: "center",
+                  alignContent: "center",
+                  alignSelf: "center",
+                  margin: 10,
+                }
+              : {
+                  width: screenWidth * 0.55,
+                  height: 35,
+                  elevation: 10,
+                  backgroundColor: "white",
+                  borderWidth: 2,
+                  borderColor: "#50A0D5",
+                  borderRadius: 10,
+                  justifyContent: "center",
+                  alignContent: "center",
+                  alignSelf: "center", 
+                  margin: 10,
+                }
+          }
+          onPress={() =>visitFlag != CONST.VISIT_FLAG.LOADING
+            ? startPollingTelemetries(visitFlag) : Toast.show("Attendi qualche secondo", Toast.SHORT)} 
         >
           <Text
-            style={{
-              justifyContent: "center",
-              alignContent: "center",
-              alignSelf: "center",
-              fontWeight: "bold",
-              color: "#50A0D5",
-            }}
+            style={
+              visitFlag == CONST.VISIT_FLAG.LOADING
+                ? {
+                    justifyContent: "center",
+                    alignContent: "center",
+                    alignSelf: "center",
+                    fontWeight: "bold",
+                    color: "gray",
+                  }
+                : {
+                    justifyContent: "center",
+                    alignContent: "center",
+                    alignSelf: "center",
+                    fontWeight: "bold",
+                    color: "#50A0D5",
+                  }
+            }
           >
-            {visitFlag == CONST.VISIT_FLAG.START
-              ? "Inizia visita"
-              : "Concludi visita"}
+            {visitState}
           </Text>
         </TouchableOpacity>
         <Text style={styles.descriptionText}>Staute</Text>

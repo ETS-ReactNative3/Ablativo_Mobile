@@ -19,9 +19,14 @@ export async function login(username, pwd, dispatch) {
     .then((response) => {
       console.log(response.status);
       if (response.status == "200") {
+        console.log(
+          "DEBUG : login : " + JSON.stringify(response, undefined, 4)
+        );
+
         dispatch({ type: "SIGN_IN", token: response.token });
         saveData("userToken", response.token);
         saveData("userName", username);
+        saveData("userMentor", response.mentor);
       } else {
         Toast.show("Login Error " + response.status, Toast.SHORT);
       }

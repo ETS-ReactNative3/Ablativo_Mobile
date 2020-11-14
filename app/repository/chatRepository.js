@@ -85,9 +85,9 @@ export async function sendMessage(message, chatID) {
     .then((response) => response.json())
     .then((response) => {
       if (response.status == "200") {
-        console.log(
+     /*    console.log(
           "DEBUG : createChat : " + JSON.stringify(response, undefined, 4)
-        );
+        ); */
 
         console.log(response.questions);
       } else {

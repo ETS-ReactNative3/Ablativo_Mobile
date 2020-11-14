@@ -15,6 +15,7 @@ import { ChatHeader } from "../../components/chatHeader";
 import { CONST } from "../../../config";
 import { createChat, sendMessage } from "../../repository/chatRepository";
 import { Value } from "react-native-reanimated";
+import { getMentorDetails } from "../../repository/appRepository";
 
 const { connect, init, startDiscovery, startScanning } = Kontakt;
 const kontaktEmitter = new NativeEventEmitter(KontaktModule);
@@ -117,10 +118,10 @@ export const beaconSetup = async () => {
 export const ChatScreen = ({
   chatId,
   username,
-  mentor,
   ownName,
   ownPic,
   artworkID,
+  mentorName,
   userId,
   navigation,
 }) => {
@@ -134,9 +135,29 @@ export const ChatScreen = ({
   });
   const [artworkUser, setArtworkUser] = useState({});
   const [isTyping, setIsTyping] = useState(false);
+  const [mentorUser, setMentorUser] = useState("");
+  const [askedQuestion, setAskedQuestion] = useState([]);
+
+  function askCounterHelper(value) {
+    var temp = askedQuestion;
+    temp[value]++;
+    setAskedQuestion(temp);
+  }
+
+  async function handleMentorData(data) {
+    var mentorUser = {
+      _id: data._id,
+      name: data.name,
+      avatar: data.image,
+      questions: data.questions,
+    };
+
+    setMentorUser(mentorUser);
+  }
 
   async function retrieveChat() {
     await createChat(artworkID, setChatDetails);
+    getMentorDetails(mentorName, handleMentorData);
   }
 
   useEffect(() => {
@@ -145,13 +166,16 @@ export const ChatScreen = ({
 
   useEffect(() => {
     if (chatDetails) {
-     
       var artworkUser = {
         _id: artworkID,
         name: chatDetails?.artworkName,
         avatar: chatDetails?.artworkAvatar,
       };
+      var askedQuestionTemp = new Array(
+        chatDetails?.artworkQuestions.Q.length
+      ).fill(0);
 
+      setAskedQuestion(askedQuestionTemp);
       setArtworkUser(artworkUser);
       appendQuickReplies();
     }
@@ -188,9 +212,6 @@ export const ChatScreen = ({
 
   const onSend = useCallback((msg) => {
     var temp = messages;
-
-    console.log(temp);
-
     try {
       temp.push(msg[0]);
       setMessages(temp);
@@ -204,7 +225,10 @@ export const ChatScreen = ({
   const onQuickReply = (replies) => {
     const createdAt = new Date();
     if (replies.length === 1) {
-      console.log(replies[0]);
+      askCounterHelper(replies[0].value);
+     
+
+      let message;
       onSend([
         {
           createdAt: createdAt,
@@ -215,16 +239,29 @@ export const ChatScreen = ({
       ]);
       setIsTyping(true);
       setTimeout(() => {
+        message =
+          askedQuestion[replies[0].value] < 2
+            ? {
+                createdAt: createdAt,
+                _id: Math.round(Math.random() * 1000000),
+                text: chatDetails.artworkQuestions.A[replies[0].value],
+                user: artworkUser,
+                quickReplies: storedReplies,
+              }
+            : {
+                createdAt: createdAt,
+                _id: Math.round(Math.random() * 1000000),
+                text:
+                  mentorUser.questions.R[
+                    Math.round(
+                      Math.random() * (mentorUser.questions.R.length - 1)
+                    )
+                  ],
+                user: mentorUser,
+                quickReplies: storedReplies,
+              };
         setIsTyping(false);
-        onSend([
-          {
-            createdAt: createdAt,
-            _id: Math.round(Math.random() * 1000000),
-            text: chatDetails.artworkQuestions.A[replies[0].value],
-            user: artworkUser,
-            quickReplies: storedReplies,
-          },
-        ]);
+        onSend([message]);
       }, 4000);
     } else {
       console.log("replies param is not set correctly");
@@ -240,7 +277,7 @@ export const ChatScreen = ({
       <ChatHeader
         type={CONST.HEADER_TYPE.CHAT}
         name={username}
-        subtitle={mentor}
+        subtitle={mentorName}
         goBack={navigateBack}
       />
 

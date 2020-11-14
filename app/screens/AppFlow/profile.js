@@ -17,43 +17,12 @@ import { colors } from "react-native-elements";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { getMyInfo, getMyVisits } from "../../repository/appRepository";
 import { CONST } from "../../../config";
+import SoundPlayer from "react-native-sound-player";
+import Toast from 'react-native-rn-toast';
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
 
-/* const visits = [
-  {
-    id: 0,
-    museum: "Museo dei gessi",
-    location: "Sapienza",
-    time: "35m",
-    musicLink: "www.google.it",
-    createdAt: Date.now(),
-    image: "../../assets/images/uniroma1-universita-la-sapienza-di-roma.jpg",
-    questions: [
-      {
-        id: 0,
-        question: "Come sei arrivato in questo museo?",
-        answer: "Ho navigato nei mari di tutto il mondo prima di giungere qui.",
-        statue: { name: "Zeus", image: "https://picsum.photos/710" },
-      },
-      {
-        id: 1,
-        question: "Quanti anni hai?",
-        answer: "Sono nata nel 192 d.C. sotto la mano di Petrus artista Romano",
-        statue: { name: "Minerva", image: "https://picsum.photos/750" },
-      },
-      {
-        id: 2,
-        question: "Di che materiale sei fatto?",
-        answer:
-          "Sono fatto completamente di bronzo, ma per gli Dei non brillo più come un tempo.",
-        statue: { name: "Plutarco", image: "https://picsum.photos/720" },
-      },
-    ],
-  },
-];
- */
 export const ProfileScreen = ({ props }) => {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [name, setName] = React.useState("");
@@ -219,7 +188,19 @@ export const ProfileScreen = ({ props }) => {
             </View>
             <View style={styles.cardRightContent}>
               <TouchableWithoutFeedback
-                onPress={() => musicRef.current.startAnimation()}
+                onPress={() => {
+                  musicRef.current.startAnimation();
+                  try {
+                    SoundPlayer.playUrl(
+                      CONST.MUSIC_STORAGE_LINK + data.item.musicLink
+                    );  
+                  } catch (error) {
+                    Toast.show("Server error", Toast.SHORT);
+                    console.log(error);
+
+                  }
+                  
+                }}
               >
                 <Icon
                   width={30}
@@ -284,15 +265,11 @@ export const ProfileScreen = ({ props }) => {
           <Text style={styles.usernameText}>{name.toUpperCase()}</Text>
           <View style={styles.socialsContainer}>
             <View style={styles.profileSocial}>
-              <Text category="s2">Questions</Text>
+              <Text category="s2">Domande</Text>
               <Text category="c2">{counter.question}</Text>
             </View>
             <View style={styles.profileSocial}>
-              <Text category="s2">Time</Text>
-              <Text category="c2">{counter.time} m</Text>
-            </View>
-            <View style={styles.profileSocial}>
-              <Text category="s2">Visits</Text>
+              <Text category="s2">Visite</Text>
               <Text category="c2">{counter.visit}</Text>
             </View>
           </View>

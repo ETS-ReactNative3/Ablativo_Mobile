@@ -9,7 +9,7 @@ export const ChatWrapper = ({ route, navigation }) => {
   const chatId = chat.chatId;
   const username = chat.username;
   const otherPic = otherPic;
-  const mentor = route.params.mentor;
+  const mentorName = route.params.mentorName;
   const ownName = route.params.ownName;
   const ownPic =
     "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60";
@@ -25,7 +25,7 @@ export const ChatWrapper = ({ route, navigation }) => {
         chatId={chatId}
         username={username}
         otherPic={otherPic}
-        mentor={mentor}
+        mentorName={mentorName}
         ownName={ownName}
         ownPic={ownPic}
         artworkID={artworkID}
