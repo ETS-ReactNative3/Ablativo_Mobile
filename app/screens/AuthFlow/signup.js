@@ -23,15 +23,15 @@ import { AuthContext } from "../../App";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 
 const MENTOR_AUGUSTO = "https://picsum.photos/1000";
-const MENTOR_CESARE = "https://picsum.photos/1500";
+const MENTOR_CESARE =
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Gaius_Iulius_Caesar_%28Vatican_Museum%29.jpg/800px-Gaius_Iulius_Caesar_%28Vatican_Museum%29.jpg";
 const MENTOR_NERONE = "https://picsum.photos/100";
 
 const screenWidth = Math.round(Dimensions.get("screen").width);
 const screenHeight = Math.round(Dimensions.get("screen").height);
 
 export const SignUpScreen = (props) => {
-  
-  const {navigation, route} = props;
+  const { navigation, route } = props;
   const [username, setUsername] = React.useState(route.params.username);
   const [password, setPassword] = React.useState(route.params.password);
   const { signUp } = React.useContext(AuthContext);
@@ -102,16 +102,27 @@ export const SignUpScreen = (props) => {
                 }}
               />
             </TouchableOpacity>
-            <Image
-              source={{ uri: item.image }}
+            <View
               style={{
                 width: 200,
                 height: 200,
                 alignSelf: "center",
-                resizeMode: "contain",
-                borderRadius: 1000,
+                borderRadius: 200,
+                backgroundColor: "red",
               }}
-            />
+            >
+              <Image
+                source={{ uri: item.image }}
+                style={{
+                  width: 200,
+                  height: 200,
+                  alignSelf: "center",
+                  resizeMode: "cover",
+                  borderRadius: 200,
+                }}
+              />
+            </View>
+
             <TouchableOpacity
               onPress={() => {
                 _carousel.snapToNext();
