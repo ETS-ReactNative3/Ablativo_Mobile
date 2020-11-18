@@ -85,36 +85,6 @@ export const beaconSetup = async () => {
   }
 };
 
-/* messages: [
-      {
-        _id: 2,
-        text: `Hey, qual è il tuo colore preferito?`,
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: "Statue",
-          avatar:
-            "https://ladiscaricadelloziotom.files.wordpress.com/2017/09/img_0263.jpg?w=614",
-        },
-        quickReplies: {
-          type: "radio", // or 'checkbox'
-          values: [
-            {
-              title: "Ea",
-              value: 1,
-            },
-            {
-              title: "Yellow",
-              value: "Yellow",
-            },
-            {
-              title: "Blue",
-              value: "Blue",
-            },
-          ],
-        },
-      },
-    ], */
 export const ChatScreen = ({
   chatId,
   username,
@@ -137,6 +107,10 @@ export const ChatScreen = ({
   const [isTyping, setIsTyping] = useState(false);
   const [mentorUser, setMentorUser] = useState("");
   const [askedQuestion, setAskedQuestion] = useState([]);
+
+  const generateMessageId = () => {
+    return Math.floor(Math.random() * 10000) + 1;
+  };
 
   function askCounterHelper(value) {
     var temp = askedQuestion;
@@ -206,7 +180,7 @@ export const ChatScreen = ({
 
       setMessages(messagesAux);
     } else {
-      console.log("Errore retrieving chatDetails");
+      console.log("Error retrieving chatDetails");
     }
   }
 
@@ -218,18 +192,16 @@ export const ChatScreen = ({
     } catch (error) {
       console.error("Error on send : " + error);
     } finally {
-      sendMessage(msg[0], chatId);
+      sendMessage(msg[0], chatId);      // Save message on aws
     }
   }, []);
 
   const onQuickReply = (replies) => {
     const createdAt = new Date();
     if (replies.length === 1) {
-      askCounterHelper(replies[0].value);
-     
-
+      askCounterHelper(replies[0].value); // Spam control
       let message;
-      onSend([
+      onSend([                            // Send user question
         {
           createdAt: createdAt,
           _id: Math.round(Math.random() * 1000000),
@@ -237,18 +209,18 @@ export const ChatScreen = ({
           user: user,
         },
       ]);
-      setIsTyping(true);
-      setTimeout(() => {
+      setIsTyping(true);                  // Set that artworks it's typing
+      setTimeout(() => {                  // Reply randomly from 1000 to 7000
         message =
-          askedQuestion[replies[0].value] < 2
-            ? {
+          askedQuestion[replies[0].value] < 2   // If user it's not spamming
+            ? {                                 // The artwork will replies
                 createdAt: createdAt,
                 _id: Math.round(Math.random() * 1000000),
                 text: chatDetails.artworkQuestions.A[replies[0].value],
                 user: artworkUser,
                 quickReplies: storedReplies,
-              }
-            : {
+              }                                 // Otherwise the mentor will replies
+            : {                                 // Randomly 
                 createdAt: createdAt,
                 _id: Math.round(Math.random() * 1000000),
                 text:
@@ -260,11 +232,11 @@ export const ChatScreen = ({
                 user: mentorUser,
                 quickReplies: storedReplies,
               };
-        setIsTyping(false);
+        setIsTyping(false);               // Stop typing
         onSend([message]);
-      }, 4000);
+      }, Math.round(Math.random() * 7000) +1000);
     } else {
-      console.log("replies param is not set correctly");
+      console.log("Check the replies params");
     }
   };
 
@@ -282,7 +254,7 @@ export const ChatScreen = ({
       />
 
       <GiftedChat
-        messageIdGenerator={() => Math.floor(Math.random() * 10000) + 1}
+        messageIdGenerator={() => generateMessageId()}
         messages={messages}
         onSend={(message) => onSend(message)}
         user={user}

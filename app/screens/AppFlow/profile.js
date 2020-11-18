@@ -195,11 +195,8 @@ export const ProfileScreen = ({ props }) => {
                       CONST.MUSIC_STORAGE_LINK + data.item.musicLink
                     );  
                   } catch (error) {
-                    Toast.show("Server error", Toast.SHORT);
                     console.log(error);
-
                   }
-                  
                 }}
               >
                 <Icon

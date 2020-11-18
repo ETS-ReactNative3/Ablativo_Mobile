@@ -31,11 +31,8 @@ export const ChatList = ({ navigation }) => {
     var userName = await retrieveData("userName");
     var mentorName = await retrieveData("userMentor");
 
-
-
     setOwnName(userName);
     setMentorName(mentorName);
-
   }
 
   React.useEffect(() => {
@@ -44,7 +41,6 @@ export const ChatList = ({ navigation }) => {
   }, []);
 
  
-
   React.useEffect(() => {
     if (roomID != "") {
       console.log(roomID);

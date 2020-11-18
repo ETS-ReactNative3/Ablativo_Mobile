@@ -25,7 +25,6 @@ import {
   setUpdateIntervalForType,
   SensorTypes,
 } from "react-native-sensors";
-import { map, filter } from "rxjs/operators";
 import Toast from "react-native-rn-toast";
 import { createVisit, endVisit } from "../../repository/appRepository";
 import RNShakeEvent from "react-native-shake-event";
@@ -37,21 +36,17 @@ const roomID = "a936eb9d-6907-4bac-bdc6-c71eb2efff74";
 
 export const HomeScreen = ({ navigation }) => {
   const [visitFlag, setVisitFlag] = useState(CONST.VISIT_FLAG.START);
-  const [subscriptionAccelerometer, setSubscriptionAccelerometer] = useState(
-    ""
-  );
+  const [subscriptionAccelerometer, setSubscriptionAccelerometer] = useState("");
   const [subscriptionGyroscope, setSubscriptionGyroscope] = useState("");
   const [subscriptionHeartRate, setSubscriptionHeartRate] = useState("");
-
   const [roomName, setRoomName] = useState("");
   const [artworks, setArtworks] = useState("");
   const [storedTelemetries, setStoredTelemetries] = useState([]);
-
   const [roomUpvoted, setRoomUpvoted] = useState(-1);
   const [artworksUpvoted, setArtworksUpvoted] = useState([]);
   const [visitID, setVisitID] = useState("");
-
   const [visitState, setVisitState] = useState("Inizia visita");
+  const likeRef = React.createRef();
 
   async function handleEndVisit(telemetries, subs_a, subs_g, subs_h) {
     console.log(telemetries);
@@ -115,7 +110,6 @@ export const HomeScreen = ({ navigation }) => {
     }
 
     if (type == CONST.VISIT_FLAG.END) {
-      console.log("Stop polling");
 
       setVisitState("Elaborando la musica...");
       setVisitFlag(CONST.VISIT_FLAG.LOADING);
@@ -128,18 +122,7 @@ export const HomeScreen = ({ navigation }) => {
         handleEndVisit
       );
     } else {
-      console.log("Start polling");
-
-      //in this phase we currently supports only Museo dei Gessi at Sapienza
-      createVisit(
-        "Museo dei Gessi",
-        "Sapienza",
-        "",
-        subs_a,
-        subs_g,
-        subs_h,
-        handleStartVisit
-      );
+      createVisit(subs_a, subs_g, subs_h, handleStartVisit);
     }
   }
 
@@ -153,15 +136,13 @@ export const HomeScreen = ({ navigation }) => {
   };
 
   React.useEffect(() => {
-    beaconSetup();
     saveData("roomID", roomID); // retreived from beacon
     getRoomByID(roomID, handleRoom);
 
-    RNShakeEvent.addEventListener("shake", () => {
+    RNShakeEvent.addEventListener("shake", () => {  //leave a positive feedback through shake
       upvoteRoom(roomID, -roomUpvoted, setRoomUpvoted);
     });
   }, []);
-  const likeRef = React.createRef();
 
   const _renderStatue = (element) => {
     var item = element.item;
@@ -271,12 +252,15 @@ export const HomeScreen = ({ navigation }) => {
                   borderRadius: 10,
                   justifyContent: "center",
                   alignContent: "center",
-                  alignSelf: "center", 
+                  alignSelf: "center",
                   margin: 10,
                 }
           }
-          onPress={() =>visitFlag != CONST.VISIT_FLAG.LOADING
-            ? startPollingTelemetries(visitFlag) : Toast.show("Attendi qualche secondo", Toast.SHORT)} 
+          onPress={() =>
+            visitFlag != CONST.VISIT_FLAG.LOADING
+              ? startPollingTelemetries(visitFlag)
+              : Toast.show("Attendi qualche secondo", Toast.SHORT)
+          }
         >
           <Text
             style={

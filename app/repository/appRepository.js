@@ -133,7 +133,6 @@ export async function getStatueByID(statueID, callback) {
 export async function createVisit(
   museum,
   location,
-  image,
   subs_a,
   subs_g,
   subs_h,
@@ -148,12 +147,12 @@ export async function createVisit(
     },
     body: JSON.stringify({
       token: token,
-      museum: museum,
-      location: location,
+      museum: "Museo dei Gessi",
+      location:  "Sapienza",
       time: 0,
       musicLink: "",
       createdAt: Date.now(),
-      image: image,
+      image: "",
     }),
   })
     .then((response) => response.json())
