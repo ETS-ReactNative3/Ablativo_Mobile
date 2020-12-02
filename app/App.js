@@ -1,34 +1,39 @@
-import React from 'react';
-import * as eva from '@eva-design/eva';
-import { ApplicationProvider, Layout, Button, IconRegistry, Text } from '@ui-kitten/components';
-import { EvaIconsPack } from '@ui-kitten/eva-icons';
-import { AppNavigator } from './navigation/appNavigation';
-import { AuthNavigator } from './navigation/authNavigation';
-import { SplashScreen } from './screens/splashScreen';
-import Toast from 'react-native-rn-toast';
-import AsyncStorage from '@react-native-community/async-storage';
-import { login, register } from './repository/authRepository';
-import { default as theme } from './styles/custom-theme'; // <-- Import app theme
-import { default as mapping } from './styles/mapping.json'; // <-- Import app mapping
+import React from "react";
+import * as eva from "@eva-design/eva";
+import {
+  ApplicationProvider,
+  Layout,
+  Button,
+  IconRegistry,
+  Text,
+} from "@ui-kitten/components";
+import { EvaIconsPack } from "@ui-kitten/eva-icons";
+import { AppNavigator } from "./navigation/appNavigation";
+import { AuthNavigator } from "./navigation/authNavigation";
+import { SplashScreen } from "./screens/splashScreen";
+import Toast from "react-native-rn-toast";
+import AsyncStorage from "@react-native-community/async-storage";
+import { login, register } from "./repository/authRepository";
+import { default as theme } from "./styles/custom-theme"; // <-- Import app theme
+import { default as mapping } from "./styles/mapping.json"; // <-- Import app mapping
 export const AuthContext = React.createContext();
 
 export default function App({ navigation }) {
-
   const [state, dispatch] = React.useReducer(
     (prevState, action) => {
       switch (action.type) {
-        case 'RESTORE_TOKEN':
+        case "RESTORE_TOKEN":
           return {
             ...prevState,
             userToken: action.token,
             isLoading: false,
           };
-        case 'SIGN_IN':
+        case "SIGN_IN":
           return {
             ...prevState,
             userToken: action.token,
           };
-        case 'SIGN_OUT':
+        case "SIGN_OUT":
           return {
             ...prevState,
             userToken: null,
@@ -48,9 +53,9 @@ export default function App({ navigation }) {
       let userToken;
 
       try {
-        userToken = await AsyncStorage.getItem('userToken');
+        userToken = await AsyncStorage.getItem("userToken");
         if (userToken) console.log("Token successfully retrieved");
-        else console.log("Token unavailable")
+        else console.log("Token unavailable");
       } catch (e) {
         // Restoring token failed
         console.log("Cannot restore Token!");
@@ -60,7 +65,7 @@ export default function App({ navigation }) {
 
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
-      dispatch({ type: 'RESTORE_TOKEN', token: userToken });
+      dispatch({ type: "RESTORE_TOKEN", token: userToken });
     };
 
     bootstrapAsync();
@@ -68,7 +73,7 @@ export default function App({ navigation }) {
 
   const authContext = React.useMemo(
     () => ({
-      signIn: async data => {
+      signIn: async (data) => {
         // In a production app, we need to send some data (usually username, password) to server and get a token
         // We will also need to handle errors if sign in failed
         // After getting token, we need to persist the token using `AsyncStorage`
@@ -76,19 +81,21 @@ export default function App({ navigation }) {
 
         if (data.username != "" && data.password != "") {
           login(data.username, data.password, dispatch);
-        }
-        else Toast.show('Invalid Data', Toast.SHORT);
+        } else Toast.show("Invalid Data", Toast.SHORT);
       },
-      signOut: () => dispatch({ type: 'SIGN_OUT' }),
-      signUp: async data => {
+      signOut: () => {
+        console.log("Logout ");
+
+        dispatch({ type: "SIGN_OUT" });
+      },
+      signUp: async (data) => {
         // In a production app, we need to send user data to server and get a token
         // We will also need to handle errors if sign up failed
         // After getting token, we need to persist the token using `AsyncStorage`
         console.log("Register: " + data.username);
         if (data.username != "" && data.password != "") {
           register(data.username, data.password, data.mentor, dispatch);
-        }
-        else Toast.show('Invalid Data', Toast.SHORT);
+        } else Toast.show("Invalid Data", Toast.SHORT);
       },
     }),
     []
@@ -106,11 +113,13 @@ export default function App({ navigation }) {
         customMapping={mapping}
       >
         {
-          state.isLoading
-            ? <SplashScreen />   // App is Loading then splash screen
-            : state.userToken == null
-              ? <AuthNavigator /> // !Token User is not signed in
-              : <AppNavigator /> // Token then user is signed in
+          state.isLoading ? (
+            <SplashScreen /> // App is Loading then splash screen
+          ) : state.userToken == null ? (
+            <AuthNavigator /> // !Token User is not signed in
+          ) : (
+            <AppNavigator />
+          ) // Token then user is signed in
         }
       </ApplicationProvider>
     </AuthContext.Provider>

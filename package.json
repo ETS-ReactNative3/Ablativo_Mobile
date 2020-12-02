@@ -6,7 +6,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start --reset-cache",
-    "test": "jest"
+    "test": "jest",
+    "clean-all": "rm -rf node_modules && npm install && npx react-native start --reset-cache && rm -rf /tmp/metro-*"
   },
   "dependencies": {
     "@eva-design/eva": "2.0.0",
@@ -20,6 +21,7 @@
     "base-64": "^1.0.0",
     "react": "16.11.0",
     "react-native": "^0.63.2",
+    "react-native-beacons-manager": "^1.0.7",
     "react-native-dialogflow": "^3.2.2",
     "react-native-elements": "^2.0.1",
     "react-native-gesture-handler": "^1.6.1",

@@ -108,7 +108,7 @@ export const SignUpScreen = (props) => {
                 height: 200,
                 alignSelf: "center",
                 borderRadius: 200,
-                backgroundColor: "red",
+                backgroundColor: "transparent",
               }}
             >
               <Image

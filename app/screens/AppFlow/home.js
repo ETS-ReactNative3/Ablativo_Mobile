@@ -9,6 +9,10 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  DeviceEventEmitter,
+  NativeEventEmitter,
+  Platform,
+  PermissionsAndroid,
 } from "react-native";
 import { beaconSetup } from "./chat";
 import { CONST } from "../../../config";
@@ -28,15 +32,19 @@ import {
 import Toast from "react-native-rn-toast";
 import { createVisit, endVisit } from "../../repository/appRepository";
 import RNShakeEvent from "react-native-shake-event";
+import Beacons from "react-native-beacons-manager";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
 
-const roomID = "a936eb9d-6907-4bac-bdc6-c71eb2efff74";
+const roomIDTest = "a936eb9d-6907-4bac-bdc6-c71eb2efff74";
+const isAndroid = Platform.OS === "android";
 
 export const HomeScreen = ({ navigation }) => {
   const [visitFlag, setVisitFlag] = useState(CONST.VISIT_FLAG.START);
-  const [subscriptionAccelerometer, setSubscriptionAccelerometer] = useState("");
+  const [subscriptionAccelerometer, setSubscriptionAccelerometer] = useState(
+    ""
+  );
   const [subscriptionGyroscope, setSubscriptionGyroscope] = useState("");
   const [subscriptionHeartRate, setSubscriptionHeartRate] = useState("");
   const [roomName, setRoomName] = useState("");
@@ -46,6 +54,9 @@ export const HomeScreen = ({ navigation }) => {
   const [artworksUpvoted, setArtworksUpvoted] = useState([]);
   const [visitID, setVisitID] = useState("");
   const [visitState, setVisitState] = useState("Inizia visita");
+  const [insideRoom, setInsideRoom] = useState(false);
+  const [roomID, setRoomID] = useState("");
+
   const likeRef = React.createRef();
 
   async function handleEndVisit(telemetries, subs_a, subs_g, subs_h) {
@@ -110,7 +121,6 @@ export const HomeScreen = ({ navigation }) => {
     }
 
     if (type == CONST.VISIT_FLAG.END) {
-
       setVisitState("Elaborando la musica...");
       setVisitFlag(CONST.VISIT_FLAG.LOADING);
       endVisit(
@@ -136,12 +146,31 @@ export const HomeScreen = ({ navigation }) => {
   };
 
   React.useEffect(() => {
-    saveData("roomID", roomID); // retreived from beacon
-    getRoomByID(roomID, handleRoom);
+    if (roomID != "") {
+      saveData("roomID", roomID); // retreived from beacon
+      getRoomByID(roomID, handleRoom);
 
-    RNShakeEvent.addEventListener("shake", () => {  //leave a positive feedback through shake
-      upvoteRoom(roomID, -roomUpvoted, setRoomUpvoted);
-    });
+      RNShakeEvent.addEventListener("shake", () => {
+        //leave a positive feedback through shake
+        upvoteRoom(roomID, -roomUpvoted, setRoomUpvoted);
+      });
+    }
+  }, [roomID]);
+
+  React.useEffect(() => {
+    // Request for authorization while the app is open
+    Beacons.requestWhenInUseAuthorization();
+
+    // Tells the library to detect iBeacons
+    Beacons.detectIBeacons();
+
+    // Range for beacons inside the region
+    Beacons.startRangingBeaconsInRegion(CONST.BEACON_REGION);
+
+    DeviceEventEmitter.addListener(
+      "beaconsDidRange",
+      (data) => setRoomId(data.beacons[0].minor)
+    );
   }, []);
 
   const _renderStatue = (element) => {
@@ -207,92 +236,174 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={[styles.centerStyle, { marginTop: 30 }]}>
-        <View style={{ marginBottom: 30 }}>
-          <Text style={[styles.infoText, styles.centerStyle]}>
-            Sei entrato nella stanza
-          </Text>
-          <Text style={[styles.roomText, styles.centerStyle]}> {roomName}</Text>
-          <Text style={[styles.extraText, styles.centerStyle]}>
-            Ti sta piacendo? Lascia un like tramite shake!
-          </Text>
-        </View>
+      {insideRoom ? (
+        <View style={[styles.centerStyle, { marginTop: 30 }]}>
+          <View style={{ marginBottom: 30 }}>
+            <Text style={[styles.infoText, styles.centerStyle]}>
+              Sei entrato nella stanza
+            </Text>
+            <Text style={[styles.roomText, styles.centerStyle]}>
+              {" "}
+              {roomName}
+            </Text>
+            <Text style={[styles.extraText, styles.centerStyle]}>
+              Ti sta piacendo? Lascia un like tramite shake!
+            </Text>
+          </View>
 
-        <View style={{ width: screenWidth, height: 150, elevation: 10 }}>
+          <View
+            style={[
+              {
+                width: screenWidth,
+                backgroundColor: "white",
+                height: 150,
+                elevation: 20,
+                borderBottomLeftRadius: 20,
+                borderBottomRightRadius: 20,
+              },
+              styles.endStyle,
+            ]}
+          >
+            <Image
+              source={CONST.ROOM_PLACEHOLDER}
+              style={styles.placeHolderStyle}
+            />
+          </View>
+        </View>
+      ) : (
+        <View
+          style={[
+            {
+              width: screenWidth,
+              backgroundColor: "white",
+              height: 150,
+              elevation: 20,
+              borderBottomLeftRadius: 20,
+              borderBottomRightRadius: 20,
+            },
+            styles.endStyle,
+          ]}
+        >
           <Image
             source={CONST.ROOM_PLACEHOLDER}
-            style={styles.placeHolderStyle}
+            style={[styles.placeHolderStyle, styles.centerStyle]}
           />
         </View>
-      </View>
-      <View style={{ flex: 1, margin: 10 }}>
-        <TouchableOpacity
-          style={
-            visitFlag == CONST.VISIT_FLAG.LOADING
-              ? {
-                  width: screenWidth * 0.55,
-                  height: 35,
-                  elevation: 10,
-                  backgroundColor: "white",
-                  borderWidth: 2,
-                  borderColor: "gray",
-                  borderRadius: 10,
-                  justifyContent: "center",
-                  alignContent: "center",
-                  alignSelf: "center",
-                  margin: 10,
-                }
-              : {
-                  width: screenWidth * 0.55,
-                  height: 35,
-                  elevation: 10,
-                  backgroundColor: "white",
-                  borderWidth: 2,
-                  borderColor: "#50A0D5",
-                  borderRadius: 10,
-                  justifyContent: "center",
-                  alignContent: "center",
-                  alignSelf: "center",
-                  margin: 10,
-                }
-          }
-          onPress={() =>
-            visitFlag != CONST.VISIT_FLAG.LOADING
-              ? startPollingTelemetries(visitFlag)
-              : Toast.show("Attendi qualche secondo", Toast.SHORT)
-          }
-        >
-          <Text
+      )}
+
+      {insideRoom ? (
+        <View style={{ flex: 1, margin: 10 }}>
+          <TouchableOpacity
             style={
               visitFlag == CONST.VISIT_FLAG.LOADING
                 ? {
+                    width: screenWidth * 0.55,
+                    height: 35,
+                    elevation: 10,
+                    backgroundColor: "white",
+                    borderWidth: 2,
+                    borderColor: "gray",
+                    borderRadius: 10,
                     justifyContent: "center",
                     alignContent: "center",
                     alignSelf: "center",
-                    fontWeight: "bold",
-                    color: "gray",
+                    margin: 10,
                   }
                 : {
+                    width: screenWidth * 0.55,
+                    height: 35,
+                    elevation: 10,
+                    backgroundColor: "white",
+                    borderWidth: 2,
+                    borderColor: "#50A0D5",
+                    borderRadius: 10,
                     justifyContent: "center",
                     alignContent: "center",
                     alignSelf: "center",
-                    fontWeight: "bold",
-                    color: "#50A0D5",
+                    margin: 10,
                   }
             }
+            onPress={() =>
+              visitFlag != CONST.VISIT_FLAG.LOADING
+                ? startPollingTelemetries(visitFlag)
+                : Toast.show("Attendi qualche secondo", Toast.SHORT)
+            }
           >
-            {visitState}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.descriptionText}>Staute</Text>
-        <FlatList
-          data={artworks}
-          renderItem={_renderStatue}
-          keyExtractor={(item, index) => item.name + "_" + index}
-          vertical={true}
-          scrollEnabled={true}
-        />
-      </View>
+            <Text
+              style={
+                visitFlag == CONST.VISIT_FLAG.LOADING
+                  ? {
+                      justifyContent: "center",
+                      alignContent: "center",
+                      alignSelf: "center",
+                      fontWeight: "bold",
+                      color: "gray",
+                    }
+                  : {
+                      justifyContent: "center",
+                      alignContent: "center",
+                      alignSelf: "center",
+                      fontWeight: "bold",
+                      color: "#50A0D5",
+                    }
+              }
+            >
+              {visitState}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.descriptionText}>Staute</Text>
+          <FlatList
+            data={artworks}
+            renderItem={_renderStatue}
+            keyExtractor={(item, index) => item.name + "_" + index}
+            vertical={true}
+            scrollEnabled={true}
+          />
+        </View>
+      ) : (
+        <View style={[styles.centerStyle, { marginTop: 10 }]}>
+          <View style={{ marginBottom: 30 }}>
+            <Text style={[styles.infoText, styles.centerStyle]}>
+              Benventuo al
+            </Text>
+            <Text style={[styles.roomText, styles.centerStyle]}>
+              Museo dei Gessi
+            </Text>
+            <View style={[styles.circle, styles.centerStyle]}>
+              <Icon
+                width={40}
+                height={40}
+                fill={["color-primary-default"]}
+                name="arrow-circle-up-outline"
+              />
+              <Text style={[styles.circleText]}>Entra</Text>
+              <Text style={[styles.circleInfoText]}>in una stanza</Text>
+            </View>
+
+            <View style={[styles.circle, styles.centerStyle]}>
+              <Icon
+                width={40}
+                height={40}
+                fill={["color-primary-default"]}
+                name="message-circle-outline"
+              />
+              <Text style={[styles.circleText]}>Interagisci</Text>
+              <Text style={[styles.circleInfoText]}>con le statue</Text>
+            </View>
+
+            <View style={[styles.circle, styles.centerStyle]}>
+              <Icon
+                width={40}
+                height={40}
+                fill={["color-primary-default"]}
+                name="heart-outline"
+              />
+              <Text style={[styles.circleText]}>Valuta</Text>
+              <Text style={[styles.circleInfoText]}>Ti è piaciuto?</Text>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -302,10 +413,17 @@ const styles = StyleSheet.create({
     width: screenWidth,
     height: 150,
     resizeMode: "cover",
-    borderColor: "black",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   centerStyle: {
     justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    alignItems: "center",
+  },
+  endStyle: {
+    justifyContent: "flex-end",
     alignItems: "center",
     alignSelf: "center",
     alignItems: "center",
@@ -327,6 +445,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "black",
+  },
+  circleText: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  circleInfoText: {
+    fontSize: 16,
   },
   cardContainer: {
     flex: 1,
@@ -377,5 +502,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center",
+  },
+  circle: {
+    margin: 10,
+    width: 150,
+    height: 150,
+    borderColor: "#50a0d5",
+    borderWidth: 7,
+    borderRadius: 75,
+    elevation: 10,
+    backgroundColor: "white",
   },
 });

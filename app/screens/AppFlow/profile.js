@@ -8,6 +8,7 @@ import {
   Text,
   ImageBackground,
   Animated,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
 import { Icon } from "@ui-kitten/components";
@@ -18,7 +19,8 @@ import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { getMyInfo, getMyVisits } from "../../repository/appRepository";
 import { CONST } from "../../../config";
 import SoundPlayer from "react-native-sound-player";
-import Toast from 'react-native-rn-toast';
+import Toast from "react-native-rn-toast";
+import { AuthContext } from "../../App";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 const screenHeight = Math.round(Dimensions.get("window").height);
@@ -31,6 +33,7 @@ export const ProfileScreen = ({ props }) => {
   const [viewState, setViewState] = useState(true);
   const [counter, setCounter] = useState({});
   const [visits, setVisits] = useState([]);
+  const { signOut } = React.useContext(AuthContext);
 
   const animatedStyle = {
     height: animationValue,
@@ -88,42 +91,44 @@ export const ProfileScreen = ({ props }) => {
   }, []);
 
   const _renderQuestions = (data) => {
-    console.log(data);
+    console.log(data.item.question);
     return (
       <View style={{ margin: 10 }}>
-        <View style={styles.questionLeftItem}>
-          <View
-            style={{
-              margin: 5,
-              justifyContent: "center",
-            }}
-          >
-            <Image
+        {data.item.question != undefined ? (
+          <View style={styles.questionLeftItem}>
+            <View
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 30 / 2,
-                resizeMode: "cover",
-                borderRadius: 15,
-                marginLeft: 10,
+                margin: 5,
+                justifyContent: "center",
               }}
-              source={CONST.MENTOR_AUGUSTO}
-            />
-          </View>
+            >
+              <Image
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 30 / 2,
+                  resizeMode: "cover",
+                  borderRadius: 15,
+                  marginLeft: 10,
+                }}
+                source={CONST.MENTOR_AUGUSTO}
+              />
+            </View>
 
-          <Text
-            style={{
-              flex: 0.9,
-              justifyContent: "center",
-              alignItems: "center",
-              alignContent: "center",
-              alignSelf: "center",
-            }}
-          >
-            <Text style={styles.questionStatueName}>Tu: </Text>
-            <Text style={styles.questionText}>{data.item.question}</Text>
-          </Text>
-        </View>
+            <Text
+              style={{
+                flex: 0.9,
+                justifyContent: "center",
+                alignItems: "center",
+                alignContent: "center",
+                alignSelf: "center",
+              }}
+            >
+              <Text style={styles.questionStatueName}>Tu: </Text>
+              <Text style={styles.questionText}>{data.item.question}</Text>
+            </Text>
+          </View>
+        ) : null}
         <View style={styles.questionLeftItem}>
           <View
             style={{
@@ -192,8 +197,10 @@ export const ProfileScreen = ({ props }) => {
                   musicRef.current.startAnimation();
                   try {
                     SoundPlayer.playUrl(
-                      CONST.MUSIC_STORAGE_LINK + data.item.musicLink
-                    );  
+                      CONST.MUSIC_STORAGE_LINK.LINK +
+                        data.item.musicLink +
+                        CONST.MUSIC_STORAGE_LINK.EXTENSION
+                    );
                   } catch (error) {
                     console.log(error);
                   }
@@ -232,7 +239,7 @@ export const ProfileScreen = ({ props }) => {
           {showQuestionAndAnswer ? (
             <ScrollView>
               <FlatList
-                data={data.item.questions}
+                data={questions}
                 renderItem={_renderQuestions}
                 keyExtractor={(item) => item._id}
                 vertical={true}
@@ -271,6 +278,31 @@ export const ProfileScreen = ({ props }) => {
             </View>
           </View>
         </View>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            Alert.alert(
+              "Logout",
+              "Vuoi veramente uscire da Ablativo?",
+              [
+                {
+                  text: "No",
+                  style: "cancel",
+                },
+                { text: "Si", onPress: () => signOut() },
+              ],
+              { cancelable: false }
+            );
+          }}
+        >
+          <Icon
+            width={25}
+            height={25}
+            margin={15}
+            fill={["color-primary-default"]}
+            name="log-out-outline"
+            animation="zoom"
+          />
+        </TouchableWithoutFeedback>
       </View>
       <View style={{ backgroundColor: "white" }}>
         <Text style={{ fontSize: 20, fontWeight: "bold", margin: 15 }}>

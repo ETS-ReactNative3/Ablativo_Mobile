@@ -131,8 +131,6 @@ export async function getStatueByID(statueID, callback) {
 }
 
 export async function createVisit(
-  museum,
-  location,
   subs_a,
   subs_g,
   subs_h,

@@ -14,12 +14,29 @@ export const CONST = {
     START: 1,
     LOADING: 2,
   },
-  MUSIC_STORAGE_LINK: 'http://192.168.1.201:8888/music/'
+  MUSIC_STORAGE_LINK: {
+    LINK: "http://192.168.1.201:8888/music/",
+    EXTENSION: ".mid",
+  },
+  BEACON_REGION: [
+    {
+      identifier: "stanza 1",
+      uuid: "E20A39F4-73F5-4BC4-A12F-17D1AD07A961",
+      major: 1,
+      minor: 1,
+    },
+    {
+      identifier: "stanza 2",
+      uuid: "E20A39F4-73F5-4BC4-A12F-17D1AD07A961",
+      major: 1,
+      minor: 1,
+    },
+  ],
 };
 
 export function dateFormatter(date) {
   var today = new Date(date);
-  
+
   var day = today.getDate();
   var year = today.getFullYear();
   var month = today.getMonth() + 1;

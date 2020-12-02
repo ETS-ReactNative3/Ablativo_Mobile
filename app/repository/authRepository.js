@@ -94,3 +94,4 @@ export async function checkUsername(username, password, navigation) {
       console.error(error);
     });
 }
+

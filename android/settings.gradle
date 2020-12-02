@@ -1,4 +1,6 @@
 rootProject.name = 'Ablativo_Mobile'
+include ':react-native-beacons-manager'
+project(':react-native-beacons-manager').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-beacons-manager/android')
 include ':react-native-shake'
 project(':react-native-shake').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-shake/android')
 include ':react-native-sensors'
