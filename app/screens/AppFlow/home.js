@@ -18,7 +18,7 @@ import { beaconSetup } from "./chat";
 import { CONST } from "../../../config";
 import { Icon } from "@ui-kitten/components";
 import {
-  getRoomByID,
+  getRoomByDeviceID,
   upvoteArtwork,
   upvoteRoom,
 } from "../../repository/appRepository";
@@ -54,8 +54,8 @@ export const HomeScreen = ({ navigation }) => {
   const [artworksUpvoted, setArtworksUpvoted] = useState([]);
   const [visitID, setVisitID] = useState("");
   const [visitState, setVisitState] = useState("Inizia visita");
-  const [insideRoom, setInsideRoom] = useState(false);
   const [roomID, setRoomID] = useState("");
+  const [deviceID, setDeviceID] = useState("");
 
   const likeRef = React.createRef();
 
@@ -140,22 +140,29 @@ export const HomeScreen = ({ navigation }) => {
     var data = payload[0];
     setRoomName(data.roomName);
     setArtworks(data.artworks);
+    setRoomID(data._id);
 
     var upvotes = new Array(data.artworks.length).fill(0);
     setArtworksUpvoted(upvotes);
   };
 
   React.useEffect(() => {
+    if (deviceID != "") {
+      getRoomByDeviceID(deviceID, handleRoom);
+    }
+  }, [deviceID]); // Looking for devuceID changes
+
+  React.useEffect(() => {
     if (roomID != "") {
-      saveData("roomID", roomID); // retreived from beacon
-      getRoomByID(roomID, handleRoom);
+      // Once we know the room ID
+      saveData("roomID", roomID); // save the room ID globally
 
       RNShakeEvent.addEventListener("shake", () => {
-        //leave a positive feedback through shake
+        // Leave a positive feedback through shake
         upvoteRoom(roomID, -roomUpvoted, setRoomUpvoted);
       });
     }
-  }, [roomID]);
+  }, [roomID]); // Looking for roomID changes
 
   React.useEffect(() => {
     // Request for authorization while the app is open
@@ -167,10 +174,15 @@ export const HomeScreen = ({ navigation }) => {
     // Range for beacons inside the region
     Beacons.startRangingBeaconsInRegion(CONST.BEACON_REGION);
 
-    DeviceEventEmitter.addListener(
-      "beaconsDidRange",
-      (data) => setRoomId(data.beacons[0].minor)
-    );
+    // Listen for new beacons and take the closest, 
+    // if there are no beacons set roomID and deviceID to ""
+    DeviceEventEmitter.addListener("beaconsDidRange", (data) => {
+      if (data.beacons.list > 0) setDeviceID(data.beacons[0].minor);
+      else {
+        setDeviceID("");
+        setRoomID("")
+      }
+    });
   }, []);
 
   const _renderStatue = (element) => {
@@ -236,7 +248,7 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      {insideRoom ? (
+      {roomID != "" ? (
         <View style={[styles.centerStyle, { marginTop: 30 }]}>
           <View style={{ marginBottom: 30 }}>
             <Text style={[styles.infoText, styles.centerStyle]}>
@@ -291,7 +303,7 @@ export const HomeScreen = ({ navigation }) => {
         </View>
       )}
 
-      {insideRoom ? (
+      {roomID != "" ? (
         <View style={{ flex: 1, margin: 10 }}>
           <TouchableOpacity
             style={

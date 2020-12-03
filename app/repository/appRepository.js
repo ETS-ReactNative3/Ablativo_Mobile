@@ -89,6 +89,35 @@ export async function getRoomByID(roomID, callback) {
     });
 }
 
+export async function getRoomByDeviceID(deviceID, callback) {
+  await fetch(address + "dashapi/room/getRoomByID?deviceID=" + deviceID, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      console.log(response.status);
+      if (response.status == "200") {
+        console.log(
+          "DEBUG : getRoomByDeviceID : " + JSON.stringify(response, undefined, 4)
+        );
+        callback(response.data);
+      } else {
+        console.log(
+          "DEBUG : getRoomByDeviceID : " + JSON.stringify(response, undefined, 4)
+        );
+        Toast.show("Stanza non disponibile", Toast.SHORT);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+
 export async function getStatueByID(statueID, callback) {
   var token = await retrieveData("userToken");
   await fetch(

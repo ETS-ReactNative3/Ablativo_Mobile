@@ -23,7 +23,7 @@ export const CONST = {
       identifier: "stanza 1",
       uuid: "E20A39F4-73F5-4BC4-A12F-17D1AD07A961",
       major: 1,
-      minor: 1,
+      minor: 0,
     },
     {
       identifier: "stanza 2",
