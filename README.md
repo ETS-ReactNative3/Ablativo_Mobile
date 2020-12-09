@@ -33,13 +33,12 @@ npm install
 ```
 git clone https://github.com/Ablativo/Ablativo_Backend
 
+cd Ablativo_Backend
+
 npm install
 
 nodemon bin/www.js
 
-cd Ablativo_Backend
-
-npm install
 ```
 
 ### 3. Start Ablativo
